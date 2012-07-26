@@ -1,0 +1,3 @@
+[submodule "thirdParty/jquery"]
+	path = thirdParty/jquery
+	url = https://github.com/jquery/jquery.git
