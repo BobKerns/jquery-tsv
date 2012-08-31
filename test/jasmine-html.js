@@ -154,7 +154,7 @@ jasmine.HtmlReporter = function(_doc) {
       dom.symbolSummary = self.createDom('ul', {className: 'symbolSummary'}),
       dom.alert = self.createDom('div', {className: 'alert'},
         self.createDom('span', { className: 'exceptions' },
-          self.createDom('label', { className: 'label', for: 'no_try_catch' }, 'No try/catch'),
+          self.createDom('label', { className: 'label', 'for': 'no_try_catch' }, 'No try/catch'),
           self.createDom('input', { id: 'no_try_catch', type: 'checkbox' }))),
       dom.results = self.createDom('div', {className: 'results'},
         dom.summary = self.createDom('div', { className: 'summary' }),
@@ -205,7 +205,7 @@ jasmine.HtmlReporter.parameters = function(doc) {
     params = paramStr.split('&');
   }
   return params;
-}
+};
 jasmine.HtmlReporter.sectionLink = function(sectionName) {
   var link = '?';
   var params = [];
@@ -377,7 +377,7 @@ jasmine.HtmlReporter.ReporterView = function(dom) {
   function specPluralizedFor(count) {
     var str = count + " spec";
     if (count > 1) {
-      str += "s"
+      str += "s";
     }
     return str;
   }
