@@ -36,7 +36,7 @@ You may want to first do
 to return to the previous state.
 EOF
 }
-trap
+trap "handleFailure" ERR
 
 git tag --force BEFORE_RELEASE
 
