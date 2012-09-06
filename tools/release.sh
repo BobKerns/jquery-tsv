@@ -12,7 +12,7 @@ if [ "$RELEASE" == "" ]; then
 fi
 
 # Make sure the tree is clean.
-if [ "$(git status --porcelain --untracked-files=normal)" == "" ]; then
+if [ "$(git status --porcelain --untracked-files=normal)" != "" ]; then
   git status
   echo You must only release from a clean tree.
   exit 1
