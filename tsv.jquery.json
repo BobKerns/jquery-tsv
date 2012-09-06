@@ -1,0 +1,33 @@
+{
+	"name": "tsv",
+	"title": "jQuery Tab Separated Values (TSV)",
+	"description": "Parser and formatter for tab-separated values, one of the most common formats for data interchange -- text/tab-separated-values",
+	"version": "0.9",
+	"homepage": "http://code.google.com/jquery-tsv",
+	"author": {
+		"name": "Bob Kerns",
+		"url": "http://bobkerns.typepad.com"
+	},
+	"repository": {
+		"type": "git",
+		"url": "http://code.google.com/p/jquery-tsv"
+	},
+	"bugs": {
+		"url": "http://code.google.com/p/jquery-tsv/issues/list"
+	},
+	"licenses": [
+		{
+			"type": "MIT",
+			"url": "https://code.google.com/p/jquery-tsv/source/browse/src/license.txt"
+		}
+	],
+	"dependencies": {
+	  "jquery": ">=1.7.2"
+	},
+	"devDependencies": {
+		"jasmine": ">=1.2.0",
+	},
+	"keywords": [
+	  "jquery", "jQuery", "tsv", "TSV", "text/tab-separated-values", "tab", "tab-separated", "tab separated", "tab separated values", "tables", "table data", "data
+	]
+}
