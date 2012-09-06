@@ -28,7 +28,7 @@ fi
 # Now we're ready to go. Failures from here are fatal.
 set -e
 function handleFailure() {
-  echo <<EOF
+  cat 1>&2 <<EOF
 The release was unsuccessful. Please fix the problem and try again.
 
 You may want to first do
@@ -66,8 +66,10 @@ git commit -m"Release $RELEASE"
 git checkout master
 git merge -m"Release $RELEASE" release-$RELEASE
 
-echo <<EOF
+cat <<EOF
 The product is now released into the repository.
+
+Caution: You are now on the master branch.
 EOF
 
 git tag --delete BEFORE_RELEASE
