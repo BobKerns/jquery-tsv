@@ -57,40 +57,113 @@ function tsvTests(framework) {
             //  console.log(testDictionary[i]);
             //}
         });
-        it("and parse an integer", function() {
-            expect($.tsvEntry2Array("1")).toEqual(["1"]);
+        it("and parse an integer", function tsvInteger() {
+            expect($.tsv.parseRow("1")).toEqual(["1"]);
         });
-        it("and parse a quoted string", function() {
-            expect($.tsvEntry2Array('Evans & Sutherland')).toEqual(["Evans & Sutherland"]);
+        it("and parse an integer as an integer with a parser", function tsvIntegerParsed() {
+            var c = 0;
+            expect($.tsv.parseRow("1\t2", {
+                parseValue: function parseValue(val, options, colnum, colname, rownum) {
+                    // Make sure we got passed the right options.
+                    expect(options.parseValue).toBe(parseValue);
+                    // Make sure we get passed the right column/row information.
+                    expect(colnum).toBe(c++);
+                    expect(colname).toBe(String(colnum));
+                    expect(rownum).toBe(0);
+                    return Number(val);
+                }
+            })).toEqual([1, 2]);
         });
-        it("and parse an empty string", function() {
-           expect($.tsvEntry2Array("")).toEqual([""]);
+        it("and parse an integer as an integer with a parser and column names", function tsvIntegerParsed() {
+            var c = 0;
+            var cols = ["first", "second"];
+            expect($.tsv.parseRow("1\t2", {
+                columns: cols,
+                parseValue: function parseValue(val, options, colnum, colname, rownum) {
+                    // Make sure we got passed the right options.
+                    expect(options.parseValue).toBe(parseValue);
+                    // Make sure we get passed the right column/row information.
+                    expect(colnum).toBe(c++);
+                    expect(colname).toBe(cols[colnum]);
+                    expect(rownum).toBe(0);
+                    return Number(val);
+                }
+            })).toEqual([1, 2]);
         });
-        it("and parse two empty strings", function() {
-            expect($.tsvEntry2Array("\t")).toEqual(["", ""]);
+        it("and parse an empty string", function tsvStringEmpty() {
+           expect($.tsv.parseRow("")).toEqual([""]);
+        });
+        it("and parse two empty strings", function tsvString2Empty() {
+            expect($.tsv.parseRow("\t")).toEqual(["", ""]);
          });
-        it("and parse a two quoted strings", function tsv2Quoted() {
-            expect($.tsvEntry2Array('Evans & Sutherland\t230-132-111AA')).toEqual(["Evans & Sutherland", "230-132-111AA"]);
+        it("and parse a two strings", function tsv2Strings() {
+            expect($.tsv.parseRow('Evans & Sutherland\t230-132-111AA')).toEqual(["Evans & Sutherland", "230-132-111AA"]);
         });
-        it("and parse a two quoted strings", function tsvQuotedAndBlankTest() {
-            expect($.tsvEntry2Array('Evans & Sutherland\t')).toEqual(["Evans & Sutherland", ""]);
+        it("and parse a string and empty string", function tsvStringAndBlankTest() {
+            expect($.tsv.parseRow('Evans & Sutherland\t')).toEqual(["Evans & Sutherland", ""]);
         });
-        it("and parse a blank and a quoted string", function tsvQuotedAndBlankTest() {
-            expect($.tsvEntry2Array('\tVisual')).toEqual(["", "Visual"]);
-        });
-        it("and parse a blank and a quoted string", function tsvBlankAndQuotedTest() {
-            expect($.tsvEntry2Array('Visual\t')).toEqual(["Visual", ""]);
-        });
+
         it("and parse a TSV line to an array", function tsvLineTest() {
-            expect($.tsvEntry2Array(testTSVEntry)).toEqual(testEntryArray);
+            expect($.tsv.parseRow(testTSVEntry)).toEqual(testEntryArray);
         });
 
         it("and parse a set of TSV lines to an array of line arrays", function tsvArrayTest() {
-            expect($.tsv2Array(testTSV)).toEqual(testArray);
+            expect($.tsv.parseRows(testTSV)).toEqual(testArray);
         });
 
-        it("and parse a set of TSV lines to an array of line dictionaries", function tsvDictionaryTest() {
-            expect($.tsv2Dictionary(testTSV)).toEqual(testDictionary);
+        it("and parse a set of TSV lines to an array of line objects", function tsvDictionaryTest() {
+            expect($.tsv.parseObjects(testTSV)).toEqual(testDictionary);
+        });
+
+        it("and format an integer as a value", function formatInteger() {
+            expect($.tsv.formatValue(1)).toBe("1");
+        });
+
+        it("and format a string as a value", function formatInteger() {
+            expect($.tsv.formatValue("1")).toBe("1");
+        });
+        it("and format true as a value", function formatInteger() {
+            expect($.tsv.formatValue(true)).toBe("true");
+        });
+
+        it("and format false as a value", function formatFalse() {
+            expect($.tsv.formatValue(false)).toBe("false");
+        });
+
+        it("and format an array as a value", function formatArrayValue() {
+            expect($.tsv.formatValue([1, "foo", false])).toBe("1,foo,false");
+        });
+
+        it("and format an array as a row", function formatRow() {
+            expect($.tsv.formatRow([1, "foo", false])).toBe("1\tfoo\tfalse");
+        });
+
+        it("and convert an object to an array", function convertObjectArray() {
+           expect($.tsv.objectToArray({male: "Fred", female: "Ginger"}, {columns: ["female", "male"]}))
+           .toEqual(["Ginger", "Fred"]);
+        });
+
+        it("and convert an array to an object", function convertArrayObject() {
+            expect($.tsv.arrayToObject(["Ginger", "Fred"], {columns: ["female", "male"]}))
+            .toEqual({male: "Fred", female: "Ginger"});
+         });
+
+        it("and format an array of rows as tsv", function formatArrays() {
+            expect($.tsv.formatRows([["Ginger", "Fred"], ["Cleopatra", "Antony"]], {columns: ["female", "male"]}))
+            .toEqual("female\tmale\nGinger\tFred\nCleopatra\tAntony");
+        });
+
+        it("and format an array of objects as tsv", function formatArray() {
+            expect($.tsv.formatObjects([{female: "Ginger", male: "Fred"},
+                                        {female: "Cleopatra", male: "Antony"}],
+                                        {columns: ["male", "female"]}))
+            .toEqual("male\tfemale\nFred\tGinger\nAntony\tCleopatra");
+        });
+
+        it("and format an array of objects as tsv with default columns", function formatArrayDefaultCols() {
+            expect($.tsv.formatObjects([{female: "Ginger", male: "Fred"},
+                                        {female: "Cleopatra", male: "Antony"}]))
+            .toEqual("female\tmale\nGinger\tFred\nCleopatra\tAntony");
         });
     });
 }
