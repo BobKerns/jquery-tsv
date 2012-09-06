@@ -1,3 +1,6 @@
 [submodule "thirdParty/jquery"]
 	path = thirdParty/jquery
 	url = https://github.com/jquery/jquery.git
+[submodule "thirdParty/jasmine"]
+	path = thirdParty/jasmine
+	url = https://github.com/pivotal/jasmine.git
