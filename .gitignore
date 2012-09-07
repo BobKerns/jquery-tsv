@@ -1,7 +1,7 @@
 *~
 #*
-.tmp
-.bak
-.BAK
-.log
+*.tmp
+*.bak
+*.BAK
+*.log
 *.new
