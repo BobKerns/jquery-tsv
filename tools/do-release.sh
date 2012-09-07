@@ -93,7 +93,7 @@ and then:
 git checkout HEAD -- src/jquery.tsv.js
 git checkout release-$RELEASE
 git merge RELEASE_TEMP
-sh $0 $RELEASE
+sh $(dirname $0)/release $RELEASE
 
 If the merge failed, you may need to first do:
 

@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+TOOLS=$(dirname $0)
+cp $TOOLS/do-release.sh $TOOLS/do-release.tmp
+. $TOOLS/do-release.tmp
+
