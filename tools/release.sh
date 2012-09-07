@@ -34,7 +34,7 @@ function mybranch() {
   )
 }
 
-if [ "$ORIGINAL" != "release-$RELEASE" ]; then
+if [ "$(mybranch)" != "release-$RELEASE" ]; then
   cat 1>&2 <<EOF
 You must release from a release branch named release-$RELEASE
 
