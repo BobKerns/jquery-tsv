@@ -21,7 +21,11 @@ fi
 # Check out the release development branch
 git checkout release-$RELEASE
 if [ "$?" != "0" ]; then
-  echo You must release from a release branch named release-$RELEASE
+  echo <<EOF
+You must release release $RELEASE from a release branch named release-$RELEASE
+
+This should be based on the last release on master.
+EOF
   exit 1;
 fi
 
@@ -31,14 +35,17 @@ function handleFailure() {
   cat 1>&2 <<EOF
 The release was unsuccessful. Please fix the problem and try again.
 
-You may want to first do
-  git reset --hard BEFORE_RELEASE
-to return to the previous state.
+You are currently on the RELEASE_TEMP branch so you can investigate
+the failure.
+
 EOF
+
+git status
+exit 1;
 }
 trap "handleFailure" ERR
 
-git tag --force BEFORE_RELEASE
+git branch --force RELEASE_TEMP
 
 # Now update and commit the release.
 # First the version number in the manifest
@@ -66,10 +73,11 @@ git commit -m"Release $RELEASE"
 git checkout master
 git merge -m"Release $RELEASE" release-$RELEASE
 
+# --delete will only delete if it's been fully merged.
+git branch --delete RELEASE_TEMP
+
 cat <<EOF
 The product is now released into the repository.
 
 Caution: You are now on the master branch.
 EOF
-
-git tag --delete BEFORE_RELEASE
