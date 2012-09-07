@@ -103,19 +103,19 @@ mv tsv.jquery.json.new tsv.jquery.json
 
 # Then update the version number in the source.
 
-sed "s/\version\s*:\s*\".*\"/\"version\": \"$RELEASE-git\"/" < src/tsv.jquery.js >src/tsv.jquery.js.new
+sed "s/\version\s*:\s*\".*\"/\"version\": \"$RELEASE-git\"/" < src/jquery.tsv.js >src/jquery.tsv.js.new
 mv src/tsv.jquery.js.new src/tsv.jquery.js
 
 # Copy the source release to the releases tree
 
 mkdir releases/$RELEASE
-sed "s/\version\s*:\s*\".*\"/\"version\": \"$RELEASE\"/" < src/tsv.jquery.js >releases/$RELEASE/tsv.jquery-$RELEASE.js
+sed "s/\version\s*:\s*\".*\"/\"version\": \"$RELEASE\"/" < src/jquery.tsv.js >releases/$RELEASE/jquery.tsv-$RELEASE.js
 
 # Then minify the release.
 
-tools/jsmin <releases/$RELEASE/tsv.jquery-$RELEASE.js >releases/$RELEASE/tsv.jquery-$RELEASE.min.js
+tools/jsmin <releases/$RELEASE/jquery.tsv-$RELEASE.js >releases/$RELEASE/jquery.tsv-$RELEASE.min.js
 
-git add releases/$RELEASE tsv.jquery.json src/tsv.jquery.js
+git add releases/$RELEASE tsv.jquery.json src/jquery.tsv.js
 
 git commit -m"Release $RELEASE"
 
