@@ -122,7 +122,8 @@ mv src/jquery.tsv.js.new src/jquery.tsv.js
 
 # Copy the source release to the releases tree
 
-mkdir releases/$RELEASE
+mkdir -p releases/$RELEASE
+
 sed "s/\version\s*:\s*\".*\"/\"version\": \"$RELEASE\"/" < src/jquery.tsv.js >releases/$RELEASE/jquery.tsv-$RELEASE.js
 
 # Then minify the release.
