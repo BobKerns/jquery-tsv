@@ -90,6 +90,7 @@ Fix up the release-$RELEASE branch as necessary.
 If you need to make changes, check in the changes here in RELEASE_TEMP
 and then:
 
+git checkout HEAD -- src/jquery.tsv.js
 git checkout release-$RELEASE
 git merge RELEASE_TEMP
 sh $0 $RELEASE
@@ -111,12 +112,12 @@ git checkout RELEASE_TEMP
 
 # Now update and commit the release.
 # First the version number in the manifest
-sed "s/\"version\"\s*:\s*\".*\"/\"version\": \"$RELEASE\"/" <tsv.jquery.json >tsv.jquery.json.new
+sed "s/\"version\"\s*:\s*\".*\"/\"version\": \"${RELEASE}\"/" <tsv.jquery.json >tsv.jquery.json.new
 mv tsv.jquery.json.new tsv.jquery.json
 
 # Then update the version number in the source.
 
-sed "s/\version\s*:\s*\".*\"/\"version\": \"$RELEASE-git\"/" < src/jquery.tsv.js >src/jquery.tsv.js.new
+sed "s/^\(\s*version\s*:\s*\)\".*\"\(\s*,\s*$\)/\1\"${RELEASE}-git\"\2/" < src/jquery.tsv.js >src/jquery.tsv.js.new
 mv src/jquery.tsv.js.new src/jquery.tsv.js
 
 # Copy the source release to the releases tree
