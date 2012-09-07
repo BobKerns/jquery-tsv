@@ -92,7 +92,7 @@ and then:
 
 git checkout release-$RELEASE
 git merge RELEASE_TEMP
-$0 $1
+$0 $RELEASE
 
 If the merge failed, you may need to first do:
 
