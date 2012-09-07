@@ -115,7 +115,7 @@ mv tsv.jquery.json.new tsv.jquery.json
 # Then update the version number in the source.
 
 sed "s/\version\s*:\s*\".*\"/\"version\": \"$RELEASE-git\"/" < src/jquery.tsv.js >src/jquery.tsv.js.new
-mv src/tsv.jquery.js.new src/tsv.jquery.js
+mv src/jquery.tsv.js.new src/jquery.tsv.js
 
 # Copy the source release to the releases tree
 
