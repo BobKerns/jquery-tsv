@@ -87,18 +87,20 @@ cat 1>&2 <<EOF
 
 Fix up the release-$RELEASE branch as necessary.
 
-If you need to make changes, check in the changes here inRELEASE_TEMP
+If you need to make changes, check in the changes here in RELEASE_TEMP
 and then:
 
 git checkout release-$RELEASE
 git merge RELEASE_TEMP
-$0 $RELEASE
+sh $0 $RELEASE
 
 If the merge failed, you may need to first do:
 
 git rebase release-$RELEASE master
 
 EOF
+
+trap "" ERR
 
 git status
 exit 1;
