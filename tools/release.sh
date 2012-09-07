@@ -35,7 +35,7 @@ function mybranch() {
 }
 
 if [ "$ORIGINAL" != "release-$RELEASE" ]; then
-  echo <<EOF
+  cat 1>&2 <<EOF
 You must release from a release branch named release-$RELEASE
 
 This should be based on the last release on master. All topic changes
