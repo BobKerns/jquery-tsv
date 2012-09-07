@@ -85,8 +85,19 @@ fi
 
 cat 1>&2 <<EOF
 
-Fix up the release-$RELEASE branch as necessary, possibly rebasing it
-on the most recent release, then retry this command.
+Fix up the release-$RELEASE branch as necessary.
+
+If you need to make changes, check in the changes here inRELEASE_TEMP
+and then:
+
+git checkout release-$RELEASE
+git merge RELEASE_TEMP
+$0 $1
+
+If the merge failed, you may need to first do:
+
+git rebase release-$RELEASE master
+
 EOF
 
 git status
