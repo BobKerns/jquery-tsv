@@ -1,25 +1,3 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #!/usr/bin/env bash
 
 ROOT=$(dirname $0)/..
@@ -40,15 +18,46 @@ if [ "$(git status --porcelain --untracked-files=normal)" != "" ]; then
   exit 1
 fi
 
-# Check out the release development branch
-git checkout release-$RELEASE
-if [ "$?" != "0" ]; then
-  echo <<EOF
-You must release release $RELEASE from a release branch named release-$RELEASE
+GITDIR=$(git rev-parse --git-dir 2>/dev/null)
+ORIGINAL=$(git rev-parse HEAD)
+ORIGINAL_HEAD=$(cat $GITDIR/HEAD)
 
-This should be based on the last release on master.
+function mybranch() {
+  (
+    if egrep --silent -e '^ref: ' <$GITDIR/HEAD; then
+      sed 's@^.*/\([^/]*\)$@\1@' <$GITDIR/HEAD
+    else
+      BHEAD=$(git describe --all --long $(cat $GITDIR/HEAD) | sed -e 's@^.*/\([^/]*\)$@\1@')
+      POSBRANCHES=$(git branch --list --contains $(cat $GITDIR/HEAD) | egrep -v '^\*')
+      echo -n "detached from branch head at $BHEAD, Possible branches: $POSBRANCHES"
+    fi
+  )
+}
+
+if [ "$ORIGINAL" != "release-$RELEASE" ]; then
+  echo <<EOF
+You must release from a release branch named release-$RELEASE
+
+This should be based on the last release on master. All topic changes
+should be merged to this branch, and the branch should be in a clean
+state prior to release.
+
+Current state: $(mybranch)
 EOF
   exit 1;
+fi
+# Reundant after that check, but we want to be sure.
+git checkout release-$RELEASE
+
+git branch --force RELEASE_TEMP
+if [ "$?" != "0" ]; then
+  cat 1>&2 <<EOF
+For some reason, we could not create or recreate the RELEASE_TEMP branch.
+
+We appear to currently be here: $(mybranch)
+
+EOF
+  
 fi
 
 # Now we're ready to go. Failures from here are fatal.
@@ -57,9 +66,27 @@ function handleFailure() {
   cat 1>&2 <<EOF
 The release was unsuccessful. Please fix the problem and try again.
 
-You are currently on the RELEASE_TEMP branch so you can investigate
-the failure.
+EOF
 
+if [ "$(mybranch)" == "RELEASE_TEMP" ]; then
+cat 1>&2 <<EOF
+We have let you on the RELEASE_TEMP branch so you can investigate the
+failure.
+EOF
+else
+cat 1>&2 <<EOF
+We expected to leave you on the RELEASE_TEMP branch so you could
+investigate the failure.
+
+However, something appears to have gone wrong, and we have left you here:
+$(mybranch)
+EOF
+fi
+
+cat 1>&2 <<EOF
+
+Fix up the release-$RELEASE branch as necessary, possibly rebasing it
+on the most recent release, then retry this command.
 EOF
 
 git status
@@ -67,7 +94,7 @@ exit 1;
 }
 trap "handleFailure" ERR
 
-git branch --force RELEASE_TEMP
+git checkout RELEASE_TEMP
 
 # Now update and commit the release.
 # First the version number in the manifest
