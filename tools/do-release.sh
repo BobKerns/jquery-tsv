@@ -124,7 +124,7 @@ mv src/jquery.tsv.js.new src/jquery.tsv.js
 
 mkdir -p releases/$RELEASE
 
-sed "s/\version\s*:\s*\".*\"/\"version\": \"$RELEASE\"/" < src/jquery.tsv.js >releases/$RELEASE/jquery.tsv-$RELEASE.js
+sed "s/^\(\s*version\s*:\s*\)\".*\"\(\s*,\s*$\)/\1\"${RELEASE}\"\2/" < src/jquery.tsv.js >releases/$RELEASE/jquery.tsv-$RELEASE.js
 
 # Then minify the release.
 
