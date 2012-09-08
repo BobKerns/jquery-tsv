@@ -141,10 +141,11 @@ git merge -m"Release $RELEASE" RELEASE_TEMP
 git branch --delete RELEASE_TEMP
 
 git tag -a --sign --file=- $RELEASE<<EOF
-Release $RELEASE
+jQuery.tsv Release $RELEASE
 
 Created: $(date)
 Author: $(git config user.name) $(git config user.email)
+Environment: $(uname -a)
 EOF
 
 cat <<EOF
