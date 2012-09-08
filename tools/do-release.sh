@@ -70,7 +70,7 @@ EOF
 
 if [ "$(mybranch)" == "RELEASE_TEMP" ]; then
 cat 1>&2 <<EOF
-We have let you on the RELEASE_TEMP branch so you can investigate the
+We have left you on the RELEASE_TEMP branch so you can investigate the
 failure.
 EOF
 else
@@ -135,10 +135,17 @@ git add releases/$RELEASE tsv.jquery.json src/jquery.tsv.js
 git commit -m"Release $RELEASE"
 
 git checkout master
-git merge -m"Release $RELEASE" release-$RELEASE
+git merge -m"Release $RELEASE" RELEASE_TEMP
 
 # --delete will only delete if it's been fully merged.
 git branch --delete RELEASE_TEMP
+
+git tag -a --sign --file- $RELEASE<<EOF
+Release $RELEASE
+
+Created: $(date)
+Author: $(git config user.name) $(git config user.email)
+EOF
 
 cat <<EOF
 The product is now released into the repository.
