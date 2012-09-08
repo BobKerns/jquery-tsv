@@ -140,7 +140,7 @@ git merge -m"Release $RELEASE" RELEASE_TEMP
 # --delete will only delete if it's been fully merged.
 git branch --delete RELEASE_TEMP
 
-git tag -a --sign --file- $RELEASE<<EOF
+git tag -a --sign --file=- $RELEASE<<EOF
 Release $RELEASE
 
 Created: $(date)
