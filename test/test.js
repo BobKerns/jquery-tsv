@@ -51,9 +51,6 @@
 		return htmlReporter.specFilter(spec);
 	    };
 	    execJasmine();
-	    function loginHandler() { location.href="test-login.html" }
-	    $('a[href*="Please%20log%20in"]').on("click", loginHandler);
-	    $('a[href*="Please%20log%20in"]').attr("href", "test-login.html");
 
 	  function execJasmine() {
 	    jasmineEnv.execute();
