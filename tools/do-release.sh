@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
+GOOGLEHOST=code.google.com
 
 ROOT=$(dirname $0)/..
 cd $ROOT
 
 RELEASE=$1
+
+
 
 # Make sure we have a version number.
 if [ "$RELEASE" == "" ]; then
@@ -140,17 +143,78 @@ git merge -m"Release $RELEASE" RELEASE_TEMP
 # --delete will only delete if it's been fully merged.
 git branch --delete RELEASE_TEMP
 
-git tag -a --sign --file=- $RELEASE<<EOF
-jQuery.tsv Release $RELEASE
+TAG_MESSAGE="jQuery.tsv Release $RELEASE
 
 Created: $(date)
 Author: $(git config user.name) $(git config user.email)
 Based on: $(git name-rev --tags --always $(git merge-base master HEAD))
 Environment: $(uname -a)
+"
+
+git tag -a --sign --file=- $RELEASE<<EOF
+$TAG_MESSAGE
 EOF
 
 cat <<EOF
-The product is now released into the repository.
+The product is now released into the repository. Now attempting upload to Google Code
+EOF
 
+function googlepass() {
+  (cat ~/.netrc 2>/dev/null || cat ~/_netrc) | (
+     while read -a params; do
+       for (( i=0; i < ${#params[*]}; i++ )); do
+         if (( (i & 1) == 0 )); then
+           a=${params[$((i))]}
+           b=${params[$((i+1))]}
+           if [ "$a" == "machine" ]; then
+               machine=$b
+           elif [ "$a" == "password" ]; then
+             password=$b
+           elif [ "$a" == "login" ]; then
+             login=$b
+           fi
+         fi
+       done
+       if [ "$machine" == "$GOOGLEHOST" ]; then
+         echo $login $password
+         exit 0;
+       fi
+     done
+     exit 1
+  )
+}
+
+declare -a _GOOGLEPASS=$(googlepass)
+GOOGLEUSER=${_GOOGLEPASS[0]}
+GOOGLEPASSWORD=${_GOOGLEPASS[1]}
+
+if [ "$GOOGLEUSER" == "" ]; then
+  read -ers -p "Google Code user for $GOOGLEHOST ($(git config user.email)): " GOOGLEUSER
+fi
+
+if [ "$GOOGLEUSER" == "" -a "$(git config user.email)" != "" ]; then
+   GOOGLEUSER=$(git config user.email)
+fi
+
+if [ "$GOOGLEPASSWORD" == "" ]; then
+  read -ers -p "Google Code Password for $GOOGLEUSER@$GOOGLEHOST: " GOOGLEPASSWORD
+fi
+
+MSG="
+Full source version for development and debugging use.
+Use the minified version for production.
+
+$TAG_MESSAGE"
+
+$ROOT/tools/googlecode_upload.py -p jquery-tsv -s "jquery.tsv-0.94.js full source version" -d "$MSG" -u $GOOGLEUSER -l Featured,Source -w $GOOGLEPASSWORD $ROOT/release/$RELEASE/jquery.tsv-0.94.js
+
+MSG="
+Minified version for production use.
+
+$TAG_MESSAGE"
+
+$ROOT/tools/googlecode_upload.py -p jquery-tsv -s "jquery.tsv-0.94.min.js minified production version" -d "$MSG" -u $GOOGLEUSER -l Featured,Executable -w $GOOGLEPASSWORD $ROOT/release/$RELEASE/jquery.tsv-0.94.min.js
+
+cat <<EOF
 Caution: You are now on the master branch.
 EOF
