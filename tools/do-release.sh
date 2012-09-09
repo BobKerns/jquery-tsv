@@ -155,9 +155,12 @@ git tag -a --sign --file=- $RELEASE<<EOF
 $TAG_MESSAGE
 EOF
 
-cat <<EOF
-The product is now released into the repository. Now attempting upload to Google Code
-EOF
+
+echo Now attempting to push changes to the Google Code repository
+
+git push master:origin/master release-$RELEASE:origin/release-$RELEASE
+
+echo The product is now released into the repository. Now attempting upload to Google Code
 
 # We do this, because the python netrc code fails to look in _netrc. But this git environment looks there.
 # I imagine this _netrc nonsense has something to do with ancient MS-DOS history, but I don't really know.
