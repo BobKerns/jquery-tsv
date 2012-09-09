@@ -145,7 +145,7 @@ jQuery.tsv Release $RELEASE
 
 Created: $(date)
 Author: $(git config user.name) $(git config user.email)
-Based on: $(git name-rev --always $(git merge-base master HEAD))
+Based on: $(git name-rev --tags --always $(git merge-base master HEAD))
 Environment: $(uname -a)
 EOF
 

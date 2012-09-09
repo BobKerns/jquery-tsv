@@ -4,3 +4,6 @@
 [submodule "thirdParty/jasmine"]
 	path = thirdParty/jasmine
 	url = https://github.com/pivotal/jasmine.git
+[submodule "wiki"]
+	path = wiki
+	url = https://rwk%40acm.org@code.google.com/p/jquery-tsv.wiki/
