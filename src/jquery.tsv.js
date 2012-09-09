@@ -40,12 +40,114 @@
         }
     }
 
+    function parser(str, single, options) {
+        var opts = tsvOptions(options);
+        function endOfValue(value) {
+            value = (value !== undefined) ? value : this.value;
+            if (this.opts.parseValue) {
+                value = this.opts.parseValue(value);
+            }
+            this.row.push(value);
+            this.value = "";
+        }
+        function endOfRow(row) {
+            row = (row !== undefined) ? row : this.row;
+            this.result.push(row);
+            this.row = [];
+            if (this.single) {
+                result = this.endOfTable();
+            }
+        }
+        function endOfHeader(headers) {
+            this.headers = (headers || this.headers);
+        }
+        function endOfTable(result) {
+            result = (result !== undefined) ? result : this.result;
+            if (! this.done) {
+                this.done = true;
+                if (this.finalize) {
+                    return this.finalize(result);
+                }
+            }
+            return result;
+        }
+        var state = {
+                options: opts,
+                single: single,
+                state: -1, // -1 = initialize, 0 = end of value, 1 = end of row, 2 = end of table, others defined by parserKernel
+                value: "",
+                row: [],
+                array: [],
+                headers: [],
+                done: false,
+                error: false,
+                endOfValue: endOfValue,
+                endOfRow: endOfRow,
+                endOfTable: endOfTable,
+                endOfHeader: endOfHeader
+        };
+        opts.initialize.call(state, state); // Initialize
+        lexer.lastIndex = 0; // Start at the beginning
+        str.replace(options.lexer, function transition(m0, m1) {
+            if (! state.done) {
+                opts.kernel.apply(state, arguments);
+            }
+            if (state.error) {
+                throw new Error((typeof error === "string") ? state.error : "parsing error");
+            }
+            return "";
+        });
+        return state.endOfTable();
+    }
+
+    function tsvKernel(m) {
+        if (m === "\n") {
+            this.endOfRow();
+        } else if (m === "\r") {
+            // Do nothing at all; we let the newline do the work.
+        } else if (m !== "\t") {
+            this.endOfValue(m);
+        }
+    }
+
     $.tsv = {
-	version: "0.94-git",
+        version: "0.94-git",
             /**
-             * The default set of options. It is not recommended to change these, as the impact will be global
+             * The default set of options. It is not recommended to change these, as the impact will be global.
+             * Instead, use a copy via $.tsv.extend(true, {}, { options: { settings } });
+             * Or supply any overridden options to each call.
              */
         options: {
+            /**
+             * The parser kernel. It is called with the arguments that String.replace supplies on each match.
+             * The matches it is called on is determined by the lexer -- a regex that identifies the sequence
+             * of pieces that the parser kernel should operate on.
+             *
+             * The context of the kernel will be the parser state object, which provides various parts of the
+             * parsing process:
+             *
+             * state: This is initially 0 to denote the initial state; the kernel should use this to identify
+             *        the current state of scanning the line. The additional states and their interpretation
+             *        are up to the kernel.
+             *
+             * The kernel must call this.endOfValue([value]) on each complete value.
+             * If no value is supplied, the value of this.value is used.
+             *
+             * The kernel must call this.endOfRow([row]) on each complete row
+             * If no value is supplied, the value of this.row is used. This is maintained automatically by
+             * this.endOfValue()
+             *
+             * The kernel should call this.endOfTable([result]) if it detects the end of the table. If this
+             * is not called (as will often be the case when end-of-table is marked by simply no more input
+             * string) it will be called automatically as this.endOfTable(), taking the result from this.result.
+             *
+             * The kernel is free to maintain any stack or history it needs to perform backtracking and other
+             * more advanced parser behavior. If the parser can only perform its work when the complete input has been
+             * seen, it may set this.finalize to a function to be called when this.endOfTable() is called. It will
+             * be called with the result-as-supplied, and should return the result-to-be-used.
+             */
+            kernel: tsvKernel,
+            lexer: /[\t\r\n]|[^\t\r\n]+/,
             /**
              * If supplied, a function to format a value on output.
              * The returned value is used in the output instead of the supplied value.
@@ -353,5 +455,104 @@
     $.tsv.formatRows = $.tsv.fromArrays;
     $.tsv.formatObject = $.tsv.fromObject;
     $.tsv.formatObjects = $.tsv.fromObjects;
+
+    if (! $.csv) {
+        $.csv = $.tsv.clone({
+            toArrays: function csvToArrays(csv, options) {
+                var opts = tsvOptions(options);
+                var state = 0;
+                var value = "";
+                var result = [];
+                var row = [];
+                function endOfCell() {
+                row.push(value);
+                value = "";
+                state = 0;
+                }
+                function endOfRow() {
+                row.push(value);
+                result.push(row);
+                row = [];
+                state = 0;
+                }
+                s.replace(/(\"|,|\n|\r|[^\",\r\n]+)/gm,
+                function (m0, m1){
+                  switch (state) {
+                  case 0:
+                      // top level, intial state.
+                      if (m1 === "\"") {
+                      state = 1;
+                      } else if (m1 === ",") {
+                      endOfCell();
+                      } else if (m1 === "\n") {
+                      endOfRow();
+                      } else if (/^\r$/.test(m1)) {
+                      // Ignored, null transition
+                      } else {
+                      if (value) {
+                          // We shouldn't get here
+                          throw new Error("Internal error: we have a value already.");
+                      }
+                      value = m1;
+                      state = 3;
+                      }
+                      break;
+                  case 1:
+                      // We've seen a delimiter.
+                      if (m1 === "\"") {
+                      // A second one, is it the end?
+                      state = 2;
+                      } else if ((m1 === ",") || (m1 === "\n") || (m1 === "\r")) {
+                      value +=  m1;
+                      state = 1;
+                      } else {
+                      value += m1;
+                      state = 1;
+                      }
+                      break;
+                  case 2:
+                      // We've seen a delimiter while scanning a delimited string.
+                      // Is it doubled?
+                      if (m1 === "\"") {
+                      // Quoted delimiter
+                      value += m1;
+                      state = 1;
+                      } else if (m1 === ",") {
+                      endOfCell();
+                      } else if (m1 === "\n") {
+                      endOfRow();
+                      } else if (m1 === "\r") {
+                      // ignore.
+                      } else {
+                      throw new Error("Illegal state");
+                      }
+                      break;
+                  case 3:
+                      // We've seen an undelimited input. We should only see separator or EOL now.
+                      if (m1 === "\"") {
+                      throw new Error("Unquoted delimiter in string");
+                      } else if (m1 === ",") {
+                      endOfCell();
+                      } else if (m1 === "\n") {
+                      endOfRow();
+                      } else if (m1 === "\r") {
+                      // Ignore
+                      } else {
+                      throw new Error("Two values, no separator?");
+                      }
+                      break;
+                  default:
+                      throw new Error("Unknown state");
+                  }
+                  return "";
+                });
+                if (state != 0) {
+                endOfRow();
+                }
+            return result;
+
+            }
+        });
+    }
 
 })(jQuery);
