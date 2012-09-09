@@ -210,14 +210,14 @@ Use the minified version for production.
 
 $TAG_MESSAGE"
 
-$ROOT/tools/googlecode_upload.py -p jquery-tsv -s "jquery.tsv-0.94.js full source version" -d "$MSG" -u $GOOGLEUSER -l Featured,Source -w $GOOGLEPASSWORD $ROOT/release/$RELEASE/jquery.tsv-0.94.js
+$ROOT/tools/googlecode_upload.py -p jquery-tsv -s "jquery.tsv-$RELEASE.js full source version" -d "$MSG" -u $GOOGLEUSER -l Featured,Source -w $GOOGLEPASSWORD $ROOT/release/$RELEASE/jquery.tsv-$RELEASE.js
 
 MSG="
 Minified version for production use.
 
 $TAG_MESSAGE"
 
-$ROOT/tools/googlecode_upload.py -p jquery-tsv -s "jquery.tsv-0.94.min.js minified production version" -d "$MSG" -u $GOOGLEUSER -l Featured,Executable -w $GOOGLEPASSWORD $ROOT/release/$RELEASE/jquery.tsv-0.94.min.js
+$ROOT/tools/googlecode_upload.py -p jquery-tsv -s "jquery.tsv-$RELEASE.min.js minified production version" -d "$MSG" -u $GOOGLEUSER -l Featured,Executable -w $GOOGLEPASSWORD $ROOT/release/$RELEASE/jquery.tsv-$RELEASE.min.js
 
 cat <<EOF
 Caution: You are now on the master branch.
