@@ -113,7 +113,8 @@
             startRownum: 0,
             // An internal flag, to avoid multiple defaulting steps.
             // values are true, if it is this default, or 'copy'.
-            ___defaults_applied: true
+            ___defaults_applied: true,
+            extend: $.extend
         },
 
         /**
@@ -152,13 +153,13 @@
         },
 
         /**
-         * $.tsv.parseRow(line, options) parses one line of TSV input into an array of values.
+         * $.tsv.toArray(line, options) parses one line of TSV input into an array of values.
          * @param line A line with values separated by single tab characters, e.g. "11\t12\t13"
          * @param options optional: { valueSplitter: /\t/, parseValue: <a function to parse each value>}
          * @param rownum optional: the row number (defaults to 0);
          * @returns an array of values, e.g. ["11" "12", "13"]
          */
-        parseRow: function parseRow(line, options, rownum) {
+        toArray: function toArray(line, options, rownum) {
             var opts = tsvOptions(options);
             var valueSplitter = opts.valueSplitter;
             rownum = rownum || 0;
@@ -171,13 +172,13 @@
         },
 
         /**
-        * $.tsv.formatRow(row, options) returns one line of TSV input from an array of values.
+        * $.tsv.fromArray(row, options) returns one line of TSV input from an array of values.
         * @param array an array of values, e.g. ["11" "12", "13"]
         * @param options optional: { valueSeparator: "\t", formatValue: <a function to format each value>}
         * @param rownum optional: the row number (defaults to 0);
         * @returns A line with values separated by single tab characters, e.g. "11\t12\t13"
         */
-        formatRow: function formatRow(array, options, rownum) {
+        fromArray: function fromArray(array, options, rownum) {
             var opts = tsvOptions(options);
             var valueSeparator = opts.valueSeparator;
             var colnum = 0;
@@ -189,34 +190,34 @@
         },
 
         /**
-         * $.tsv.parseRows(tsv, options) returns an array of arrays, one per line, each containing values from one row.
+         * $.tsv.toArrays(tsv, options) returns an array of arrays, one per line, each containing values from one row.
          * @param tsv a tab-separated-values input, e.g. "11\t\12\t13\n21\t22\t23"
          * @param options optional: { valueSplitter: /\t/, lineSplitter: /\r?\n/, parseValue: <a function to parse each value> }
          * @returns an array of arrays, e.g. [["11", "12", "13"], ["21", "22", "23"]]
          */
-        parseRows: function parseRows(tsv, options) {
+        toArrays: function toArrays(tsv, options) {
             var opts = tsvOptions(options);
             var lines = tsv.split(opts.lineSplitter);
             var rownum = opts.startRownum || 0;
             return lines.map(function doLine(line) {
-                return $.tsv.parseRow(line, opts, rownum++);
+                return $.tsv.toArray(line, opts, rownum++);
             });
         },
 
         /**
-         * $.tsv.formatRows(array, options) returns a TSV string representing the array of row arrays.
+         * $.tsv.fromArrays(array, options) returns a TSV string representing the array of row arrays.
          * @param array an array of arrays of values. To produce valid TSV, all the arrays should be of the same length.
          * @param options optional: { valueSeparator: "\t", lineSeparator: "\n", columns: ["c1", "c2", "c3"], formatValue: <a function to format each value> }
          * @returns An tsv string, e.g. "c1\tc2\tc3\n11\t\12\t13\n21\t22\t23"
          */
-        formatRows: function formatRows(array, options) {
+        fromArrays: function fromArrays(array, options) {
             var opts = tsvOptions(options);
             var first = array.length ? array[0] : [];
             var cols = tsvColumns(opts, first);
             var rownum = opts.startRownum || 0;
-            var header = opts.includeHeader ? $.tsv.formatRow(cols, opts, -1) : undefined;
+            var header = opts.includeHeader ? $.tsv.fromArray(cols, opts, -1) : undefined;
             function doRow(row) {
-                return $.tsv.formatRow(row, opts, rownum++);
+                return $.tsv.fromArray(row, opts, rownum++);
             }
             var rtemp = array.map(doRow);
             if (header) {
@@ -270,7 +271,7 @@
         },
 
         /**
-         * $.tsv.parseObjects(tsv, options) returns an array of objects from a tsv string.
+         * $.tsv.toObjects(tsv, options) returns an array of objects from a tsv string.
          * The string must either have the first row be column names, or columns: ["name1", "name2", ...] must be supplied
          * in the options.
          *
@@ -278,9 +279,9 @@
          * @param options optional: { columns ["name1", "name2" ...] }
          * @returns an array of objects, e.g. [ {name1: val1, name2: val2 ...} ...]
          */
-        parseObjects: function parseObjects(tsv, options) {
+        toObjects: function toObjects(tsv, options) {
             var opts = tsvOptions(options);
-            return $.tsv.arraysToObjects($.tsv.parseRows(tsv, opts), opts);
+            return $.tsv.arraysToObjects($.tsv.toArrays(tsv, opts), opts);
         },
 
         /**
@@ -321,24 +322,36 @@
             return result;
         },
 
-        formatObject: function formatObject(array, options) {
+        fromObject: function fromObject(array, options) {
             var opts = tsvOptions(options);
-            return $.tsv.formatRow($.tsv.objectToArray(array, opts), opts);
+            return $.tsv.fromArray($.tsv.objectToArray(array, opts), opts);
         },
 
         /**
-         * $.tsv.formatObjects(array, options) converts an array of objects into a tsv string.
+         * $.tsv.fromObjects(array, options) converts an array of objects into a tsv string.
          *
          * @param array An array of objects, e.g. [ { name1: "val1", name2: "val2", ...} ...]
          * @param options { columns: ["name1", "name2"...], includeHeaders: true, objectToArray: <optional function to convert each object> }
          */
-        formatObjects: function formatObjects(array, options) {
+        fromObjects: function fromObjects(array, options) {
             var opts = tsvOptions(options);
             var first = array.length ? array[0] : {};
             // Calculate the columns while we still have the original objects.  This is being called for side-effect!
             tsvColumns(opts, first);
-            return $.tsv.formatRows($.tsv.objectsToArrays(array, opts), opts);
-        }
+            return $.tsv.fromArrays($.tsv.objectsToArrays(array, opts), opts);
+        },
+
+        extend: $.extend
     };
+    // Compatibility with initial release.
+    $.tsv.parseRow = $.tsv.toArray;
+    $.tsv.parseRows = $.tsv.toArrays;
+    $.tsv.parseObject = $.tsv.toObject;
+    $.tsv.parseObjects = $.tsv.toObjects;
+    $.tsv.formatValue = $.tsv.formatValue;
+    $.tsv.formatRow = $.tsv.fromArray;
+    $.tsv.formatRows = $.tsv.fromArrays;
+    $.tsv.formatObject = $.tsv.fromObject;
+    $.tsv.formatObjects = $.tsv.fromObjects;
 
 })(jQuery);
