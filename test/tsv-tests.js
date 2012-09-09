@@ -1,10 +1,10 @@
 function tsvTests(framework) {
     describe("TSV files", function tsvTestSuite() {
-        var testTSVEntry;
-        var testTSV;
-        var testEntryArray;
-        var testArray;
-        var testDictionary;
+        var testTSVEntry = undefined;
+        var testTSV = undefined;
+        var testEntryArray = undefined;
+        var testArray = undefined;
+        var testDictionary = undefined;
         beforeEach(function setupTSV() {
             testTSVEntry = '1\tEvans & Sutherland\t230-132-111AA\t\tVisual\tPCB\t\t1\tOffsite\t';
             //console.log(testTSVEntry);
@@ -58,11 +58,11 @@ function tsvTests(framework) {
             //}
         });
         it("and parse an integer", function tsvInteger() {
-            expect($.tsv.parseRow("1")).toEqual(["1"]);
+            expect($.tsv.toArray("1")).toEqual(["1"]);
         });
         it("and parse an integer as an integer with a parser", function tsvIntegerParsed() {
             var c = 0;
-            expect($.tsv.parseRow("1\t2", {
+            expect($.tsv.toArray("1\t2", {
                 parseValue: function parseValue(val, options, colnum, colname, rownum) {
                     // Make sure we got passed the right options.
                     expect(options.parseValue).toBe(parseValue);
@@ -77,7 +77,7 @@ function tsvTests(framework) {
         it("and parse an integer as an integer with a parser and column names", function tsvIntegerParsed() {
             var c = 0;
             var cols = ["first", "second"];
-            expect($.tsv.parseRow("1\t2", {
+            expect($.tsv.toArray("1\t2", {
                 columns: cols,
                 parseValue: function parseValue(val, options, colnum, colname, rownum) {
                     // Make sure we got passed the right options.
@@ -91,28 +91,28 @@ function tsvTests(framework) {
             })).toEqual([1, 2]);
         });
         it("and parse an empty string", function tsvStringEmpty() {
-           expect($.tsv.parseRow("")).toEqual([""]);
+           expect($.tsv.toArray("")).toEqual([""]);
         });
         it("and parse two empty strings", function tsvString2Empty() {
-            expect($.tsv.parseRow("\t")).toEqual(["", ""]);
+            expect($.tsv.toArray("\t")).toEqual(["", ""]);
          });
         it("and parse a two strings", function tsv2Strings() {
-            expect($.tsv.parseRow('Evans & Sutherland\t230-132-111AA')).toEqual(["Evans & Sutherland", "230-132-111AA"]);
+            expect($.tsv.toArray('Evans & Sutherland\t230-132-111AA')).toEqual(["Evans & Sutherland", "230-132-111AA"]);
         });
         it("and parse a string and empty string", function tsvStringAndBlankTest() {
-            expect($.tsv.parseRow('Evans & Sutherland\t')).toEqual(["Evans & Sutherland", ""]);
+            expect($.tsv.toArray('Evans & Sutherland\t')).toEqual(["Evans & Sutherland", ""]);
         });
 
         it("and parse a TSV line to an array", function tsvLineTest() {
-            expect($.tsv.parseRow(testTSVEntry)).toEqual(testEntryArray);
+            expect($.tsv.toArray(testTSVEntry)).toEqual(testEntryArray);
         });
 
         it("and parse a set of TSV lines to an array of line arrays", function tsvArrayTest() {
-            expect($.tsv.parseRows(testTSV)).toEqual(testArray);
+            expect($.tsv.toArrays(testTSV)).toEqual(testArray);
         });
 
         it("and parse a set of TSV lines to an array of line objects", function tsvDictionaryTest() {
-            expect($.tsv.parseObjects(testTSV)).toEqual(testDictionary);
+            expect($.tsv.toObjects(testTSV)).toEqual(testDictionary);
         });
 
         it("and format an integer as a value", function formatInteger() {
@@ -130,12 +130,12 @@ function tsvTests(framework) {
             expect($.tsv.formatValue(false)).toBe("false");
         });
 
-        it("and format an array as a value", function formatArrayValue() {
+        it("and format an array as a value", function fromArrayValue() {
             expect($.tsv.formatValue([1, "foo", false])).toBe("1,foo,false");
         });
 
-        it("and format an array as a row", function formatRow() {
-            expect($.tsv.formatRow([1, "foo", false])).toBe("1\tfoo\tfalse");
+        it("and format an array as a row", function fromArray() {
+            expect($.tsv.fromArray([1, "foo", false])).toBe("1\tfoo\tfalse");
         });
 
         it("and convert an object to an array", function convertObjectArray() {
@@ -148,20 +148,20 @@ function tsvTests(framework) {
             .toEqual({male: "Fred", female: "Ginger"});
          });
 
-        it("and format an array of rows as tsv", function formatArrays() {
-            expect($.tsv.formatRows([["Ginger", "Fred"], ["Cleopatra", "Antony"]], {columns: ["female", "male"]}))
+        it("and format an array of rows as tsv", function fromArrays() {
+            expect($.tsv.fromArrays([["Ginger", "Fred"], ["Cleopatra", "Antony"]], {columns: ["female", "male"]}))
             .toEqual("female\tmale\nGinger\tFred\nCleopatra\tAntony");
         });
 
-        it("and format an array of objects as tsv", function formatArray() {
-            expect($.tsv.formatObjects([{female: "Ginger", male: "Fred"},
+        it("and format an array of objects as tsv", function fromArray() {
+            expect($.tsv.fromObjects([{female: "Ginger", male: "Fred"},
                                         {female: "Cleopatra", male: "Antony"}],
                                         {columns: ["male", "female"]}))
             .toEqual("male\tfemale\nFred\tGinger\nAntony\tCleopatra");
         });
 
-        it("and format an array of objects as tsv with default columns", function formatArrayDefaultCols() {
-            expect($.tsv.formatObjects([{female: "Ginger", male: "Fred"},
+        it("and format an array of objects as tsv with default columns", function fromArrayDefaultCols() {
+            expect($.tsv.fromObjects([{female: "Ginger", male: "Fred"},
                                         {female: "Cleopatra", male: "Antony"}]))
             .toEqual("female\tmale\nGinger\tFred\nCleopatra\tAntony");
         });

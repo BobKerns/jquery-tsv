@@ -20,10 +20,11 @@
 	var framework = setupTests(performTests);
 	function performTests() {
 	    describe("The browser", function browserTests() {
-		describe("can import", function importTests() {
-		    tsvTests(framework);
-		});
-	    });
+    		describe("can import TSV", function importTests() {
+    		    tsvTests(framework);
+    		});
+        });
+
 	    describe("Final report", function finalReport() {
 		$("#justDid").delay(750).show(1000);
 		var currentTime = new Date().getTime();
