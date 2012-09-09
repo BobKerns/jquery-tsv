@@ -159,6 +159,10 @@ cat <<EOF
 The product is now released into the repository. Now attempting upload to Google Code
 EOF
 
+# We do this, because the python netrc code fails to look in _netrc. But this git environment looks there.
+# I imagine this _netrc nonsense has something to do with ancient MS-DOS history, but I don't really know.
+# This should keep everybody happy.
+
 function googlepass() {
   (cat ~/.netrc 2>/dev/null || cat ~/_netrc) | (
      while read -a params; do
@@ -175,7 +179,7 @@ function googlepass() {
            fi
          fi
        done
-       if [ "$machine" == "$GOOGLEHOST" ]; then
+       if [ "$machine" == "$1" ]; then
          echo $login $password
          exit 0;
        fi
@@ -184,7 +188,7 @@ function googlepass() {
   )
 }
 
-declare -a _GOOGLEPASS=$(googlepass)
+declare -a _GOOGLEPASS=($(googlepass $GOOGLEHOST))
 GOOGLEUSER=${_GOOGLEPASS[0]}
 GOOGLEPASSWORD=${_GOOGLEPASS[1]}
 
