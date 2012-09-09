@@ -1,10 +1,10 @@
 function tsvTests(framework) {
     describe("TSV files", function tsvTestSuite() {
-        var testTSVEntry;
-        var testTSV;
-        var testEntryArray;
-        var testArray;
-        var testDictionary;
+        var testTSVEntry = undefined;
+        var testTSV = undefined;
+        var testEntryArray = undefined;
+        var testArray = undefined;
+        var testDictionary = undefined;
         beforeEach(function setupTSV() {
             testTSVEntry = '1\tEvans & Sutherland\t230-132-111AA\t\tVisual\tPCB\t\t1\tOffsite\t';
             //console.log(testTSVEntry);
