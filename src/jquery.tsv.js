@@ -42,13 +42,15 @@
 
     function parser(str, single, options) {
         var opts = tsvOptions(options);
+        var colIdx = 0;
+        var rowIdx = 0;
         function endOfValue(value) {
             value = (value !== undefined) ? value : this.value;
-            if (this.opts.parseValue) {
-                value = this.opts.parseValue(value);
-            }
+            value = parseValue(value, options);
+            value = this.opts.parseValue(value, opts, colIdx, tsvColumn(opts, colIdx), rowIdx);
             this.row.push(value);
             this.value = "";
+            colIdx++;
         }
         function endOfRow(row) {
             row = (row !== undefined) ? row : this.row;
@@ -57,6 +59,8 @@
             if (this.single) {
                 result = this.endOfTable();
             }
+            rowIdx++;
+            colIdx = 0;
         }
         function endOfHeader(headers) {
             this.headers = (headers || this.headers);
@@ -242,7 +246,7 @@
             var colnum = 0;
             function doValue(val) {
                 var c = colnum++;
-                return $.tsv.parseValue(val, opts, c, tsvColumn(opts, c), rownum);
+                return parseValue(val, opts, c, tsvColumn(opts, c), rownum);
             }
             return line.split(valueSplitter).map(doValue);
         },
@@ -260,7 +264,7 @@
             var colnum = 0;
             function doValue(val) {
                 var c = colnum++;
-                return $.tsv.formatValue(val, opts, c, tsvColumn(c), rownum);
+                return formatValue(val, opts, c, tsvColumn(c), rownum);
             }
             return array.map(doValue).join(valueSeparator);
         },
@@ -417,7 +421,12 @@
             return $.tsv.fromArrays($.tsv.objectsToArrays(array, opts), opts);
         },
 
-        extend: $.extend
+        extend: $.extend,
+        // Access to private functions for unit testing.
+        test: {
+            formatValue: formatValue,
+            parseValue: parseValue
+        }
     };
 
 
@@ -436,7 +445,7 @@
         var opts = tsvOptions(options);
         if (opts.parseValue) {
             // We have an override; use that instead.
-            return options.parseValue(value, opts, colnum, colname, rownum);
+            return opts.parseValue(value, opts, colnum, colname, rownum);
         }
         return value;
     }
@@ -456,7 +465,7 @@
         var opts = tsvOptions(options);
         if (opts.formatValue) {
             // We have an override; use that instead.
-            return options.formatValue(value, opts, colnum, colname, rownum);
+            return opts.formatValue(value, opts, colnum, colname, rownum);
         }
         return String(value);
     }
@@ -471,7 +480,8 @@
     $.tsv.formatObjects = $.tsv.fromObjects;
 
     if (! $.csv) {
-        $.csv = $.tsv.clone({
+        $.csv = $.tsv.extend({},
+          {
             toArrays: function csvToArrays(csv, options) {
                 var opts = tsvOptions(options);
                 var state = 0;

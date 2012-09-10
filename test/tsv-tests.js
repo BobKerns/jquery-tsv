@@ -116,22 +116,22 @@ function tsvTests(framework) {
         });
 
         it("and format an integer as a value", function formatInteger() {
-            expect($.tsv.formatValue(1)).toBe("1");
+            expect($.tsv.test.formatValue(1)).toBe("1");
         });
 
         it("and format a string as a value", function formatInteger() {
-            expect($.tsv.formatValue("1")).toBe("1");
+            expect($.tsv.test.formatValue("1")).toBe("1");
         });
         it("and format true as a value", function formatInteger() {
-            expect($.tsv.formatValue(true)).toBe("true");
+            expect($.tsv.test.formatValue(true)).toBe("true");
         });
 
         it("and format false as a value", function formatFalse() {
-            expect($.tsv.formatValue(false)).toBe("false");
+            expect($.tsv.test.formatValue(false)).toBe("false");
         });
 
         it("and format an array as a value", function fromArrayValue() {
-            expect($.tsv.formatValue([1, "foo", false])).toBe("1,foo,false");
+            expect($.tsv.test.formatValue([1, "foo", false])).toBe("1,foo,false");
         });
 
         it("and format an array as a row", function fromArray() {

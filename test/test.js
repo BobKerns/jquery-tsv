@@ -20,9 +20,7 @@
 	var framework = setupTests(performTests);
 	function performTests() {
 	    describe("The browser", function browserTests() {
-    		describe("can import TSV", function importTests() {
-    		    tsvTests(framework);
-    		});
+		    tsvTests(framework);
         });
 
 	    describe("Final report", function finalReport() {
@@ -35,6 +33,7 @@
 	    var jasmineEnv = jasmine.getEnv();
 	    jasmineEnv.updateInterval = 250;
 
+	    $('.testResults .tsvVersion').text($.tsv.version);
 	    $('.testResults .jasmineVersion').text(jasmineEnv.versionString());
 	    $('.testResults .browserVendor').text(navigator.vendor);
 	    $('.testResults .browserUserAgent').text(navigator.userAgent);
