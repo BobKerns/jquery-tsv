@@ -41,6 +41,9 @@
     }
 
     $.tsv = {
+            /**
+             * This version of the jQuery.tsv plugin.
+             */
 	version: "0.957-git",
             /**
              * The default set of options. It is not recommended to change these, as the impact will be global
@@ -50,6 +53,9 @@
              * If supplied, a function to format a value on output.
              * The returned value is used in the output instead of the supplied value.
              * If not supplied, it is simply converted to a string.
+             *
+             * In most cases, only the first argument, or possibly the second, are used. The row/column information
+             * is supplied only for special cases where formatting needs to be aware of the position.
              *
              * @param value the value to be formatted.
              * @param the options
@@ -62,6 +68,9 @@
             /**
              *  If supplied, a function to parse or canonicalize a value on input.
              * The returned value is used in place of the input.
+             *
+             * In most cases, only the first argument, or possibly the second, are used. The row/column information
+             * is supplied only for special cases where formatting needs to be aware of the position.
              *
              * @param value the value to be formatted.
              * @param the options
@@ -118,41 +127,6 @@
         },
 
         /**
-         * Parse one value. This can be overridden in the options.
-         * @param value the string to parse
-         * @param options optional: { parseValue: <substitute function> }
-         * @param colnum the column number
-         * @param colname the column name, if known, or the column number as a string.
-         * @param rownum the row number
-         * @returns the string
-         */
-        parseValue: function parseValue(value, options, colnum, colname, rownum) {
-            var opts = tsvOptions(options);
-            if (opts.parseValue) {
-                // We have an override; use that instead.
-                return options.parseValue(value, opts, colnum, colname, rownum);
-            }
-            return value;
-        },
-
-        /**
-         * Format one value. This can be overridden in the options.
-         * @param value the value to format
-         * @param options optional: { formatValue: <substitute function> }
-         * @param colnum the column number
-         * @param colname the column name, if known, or the column number as a string.
-         * @param rownum the row number
-         */
-        formatValue: function formatValue(value, options, rownum, colnum, colname, rownum) {
-            var opts = tsvOptions(options);
-            if (opts.formatValue) {
-                // We have an override; use that instead.
-                return options.formatValue(value, opts, colnum, colname, rownum);
-            }
-            return String(value);
-        },
-
-        /**
          * $.tsv.toArray(line, options) parses one line of TSV input into an array of values.
          * @param line A line with values separated by single tab characters, e.g. "11\t12\t13"
          * @param options optional: { valueSplitter: /\t/, parseValue: <a function to parse each value>}
@@ -166,7 +140,7 @@
             var colnum = 0;
             function doValue(val) {
                 var c = colnum++;
-                return $.tsv.parseValue(val, opts, c, tsvColumn(opts, c), rownum);
+                return parseValue(val, opts, c, tsvColumn(opts, c), rownum);
             }
             return line.split(valueSplitter).map(doValue);
         },
@@ -184,7 +158,7 @@
             var colnum = 0;
             function doValue(val) {
                 var c = colnum++;
-                return $.tsv.formatValue(val, opts, c, tsvColumn(c), rownum);
+                return formatValue(val, opts, c, tsvColumn(c), rownum);
             }
             return array.map(doValue).join(valueSeparator);
         },
@@ -343,12 +317,52 @@
 
         extend: $.extend
     };
+
+
+    /**
+     * Parse one value. This can be overridden in the options.
+     *
+     * This is not intended to be called by end users.
+     * @param value the string to parse
+     * @param options optional: { parseValue: <substitute function> }
+     * @param colnum the column number
+     * @param colname the column name, if known, or the column number as a string.
+     * @param rownum the row number
+     * @returns string
+     */
+    function parseValue(value, options, colnum, colname, rownum) {
+        var opts = tsvOptions(options);
+        if (opts.parseValue) {
+            // We have an override; use that instead.
+            return options.parseValue(value, opts, colnum, colname, rownum);
+        }
+        return value;
+    }
+
+    /**
+     * Format one value. This can be overridden in the options.
+     *
+     * This is not intended to be called by end users.
+     * @param value the value to format
+     * @param options optional: { formatValue: <substitute function> }
+     * @param colnum the column number
+     * @param colname the column name, if known, or the column number as a string.
+     * @param rownum the row number
+     * @returns object, string or other value.
+     */
+    function formatValue(value, options, rownum, colnum, colname, rownum) {
+        var opts = tsvOptions(options);
+        if (opts.formatValue) {
+            // We have an override; use that instead.
+            return options.formatValue(value, opts, colnum, colname, rownum);
+        }
+        return String(value);
+    }
     // Compatibility with initial release.
     $.tsv.parseRow = $.tsv.toArray;
     $.tsv.parseRows = $.tsv.toArrays;
     $.tsv.parseObject = $.tsv.toObject;
     $.tsv.parseObjects = $.tsv.toObjects;
-    $.tsv.formatValue = $.tsv.formatValue;
     $.tsv.formatRow = $.tsv.fromArray;
     $.tsv.formatRows = $.tsv.fromArrays;
     $.tsv.formatObject = $.tsv.fromObject;
