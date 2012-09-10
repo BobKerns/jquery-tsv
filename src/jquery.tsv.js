@@ -185,13 +185,8 @@
         */
         fromArray: function fromArray(array, options, rownum) {
             var opts = tsvOptions(options);
-            var valueSeparator = opts.valueSeparator || opts.syntax.valueSeparator;
-            var colnum = 0;
-            function doValue(val) {
-                var c = colnum++;
-                return formatValue(val, opts, c, tsvColumn(c), rownum);
-            }
-            return array.map(doValue).join(valueSeparator);
+            opts.includeHeader = (!options || options.includesHeader === undefined) ? false : options.includesHeader;
+            return $.tsv.fromArrays([array], opts, rownum);
         },
 
         /**
@@ -220,20 +215,36 @@
          * @param options optional: { valueSeparator: "\t", lineSeparator: "\n", columns: ["c1", "c2", "c3"], formatValue: <a function to format each value> }
          * @returns An tsv string, e.g. "c1\tc2\tc3\n11\t\12\t13\n21\t22\t23"
          */
-        fromArrays: function fromArrays(array, options) {
+        fromArrays: function fromArrays(array, options, startRownum) {
             var opts = tsvOptions(options);
-            var first = array.length ? array[0] : [];
-            var cols = tsvColumns(opts, first);
-            var rownum = opts.startRownum || 0;
-            var header = opts.includeHeader ? $.tsv.fromArray(cols, opts, -1) : undefined;
-            function doRow(row) {
-                return $.tsv.fromArray(row, opts, rownum++);
+            var rownum = startRownum || opts.startRownum || 0;
+            var syntax = opts.syntax;
+            var cols = tsvColumns(opts, array[0]);
+            syntax.formatterKernel("begin");
+            function doHeaderValue(value, col) {
+                syntax.formatterKernel("value", value, col, tsvColumn(syntax, col), -1);
             }
-            var rtemp = array.map(doRow);
-            if (header) {
-                rtemp.unshift(header);
+            if (cols && opts.includeHeader) {
+                syntax.formatterKernel("beginHeader");
+                cols.forEach(doHeaderValue);
+                syntax.formatterKernel("endHeader");
             }
-            return rtemp.join(opts.rowSeparator || opts.syntax.rowSeparator);
+            var header_offset = 0;
+            function doRow(rowData, rowIndex) {
+                if (rowData === cols) {
+                    header_offset = -1;
+                } else {
+                    var row = rownum + rowIndex + header_offset;
+                    function doValue(value, col) {
+                        syntax.formatterKernel("value", value, col, tsvColumn(opts, col), row);
+                    }
+                    syntax.formatterKernel("beginRow");
+                    rowData.forEach(doValue);
+                    syntax.formatterKernel("endRow");
+                }
+            }
+            array.forEach(doRow);
+            return syntax.formatterKernel("end");
         },
 
         /**
@@ -532,9 +543,10 @@
         case "begin":
             this.valueSeen = false;
             this.rowSeen = false;
-            this.result = [];
+            this.output = [];
             break;
         case "beginRow":
+        case "beginHeader":
             if (this.rowSeen) {
                 this.output.push(this.rowSeparator);
             }
@@ -548,11 +560,12 @@
             this.valueSeen = true;
             break;
         case "endRow":
+        case "endHeader":
             this.rowSeen = true;
             break;
         case "end":
-            var result = this.result.join("");
-            delete this.result;
+            var result = this.output.join("");
+            delete this.output;
             return result;
         default:
             throw new Error("Unknown formatter event: " + event);
