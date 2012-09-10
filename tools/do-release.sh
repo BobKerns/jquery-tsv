@@ -158,7 +158,11 @@ EOF
 
 echo Now attempting to push changes to the Google Code repository
 
-git push master:origin/master release-$RELEASE:origin/release-$RELEASE
+git push --tags google master:master release-$RELEASE:release-$RELEASE
+
+echo Now attempting to push changes to the Github repository
+
+git push --tags github master:master release-$RELEASE:release-$RELEASE
 
 echo The product is now released into the repository. Now attempting upload to Google Code
 
