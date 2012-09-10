@@ -87,6 +87,18 @@
              * But you are strongly encouraged to use column names whenever possible, especially if you work with objects.
              */
             includeHeader: true,
+
+            /**
+             * If true, when reading to arrays, if you believe the input has a header line, you can have it removed.
+             * If removed, it will be returned as the -1 element of the array. This will not show up in many Javascript
+             * debugging environments when you print out the array, nor in the toString() method for the array, but it
+             * is still accessible to code wishing to process the header array.
+             *
+             * Only enable this if you are sure the data has a header. If you set this, and it does not, the first row of
+             * data will be removed instead.
+             */
+            stripHeader: false,
+
             /**
              * The starting row number, not counting the header, if any (which is always numbered -1).
              * This can be useful for computing subranges of a table, or appending to a table.
@@ -179,17 +191,26 @@
 
         /**
          * $.tsv.toArrays(tsv, options) returns an array of arrays, one per line, each containing values from one row.
+         *
+         * If the stripHeader: option is set to true, the header will be stripped from the array, and re-added as element -1.
+         * This does not add to the length of the array, and indexing from 0 to result.length will still access the data, but
+         * not the header.
+         *
          * @param tsv a tab-separated-values input, e.g. "11\t\12\t13\n21\t22\t23"
-         * @param options optional: { valueSplitter: /\t/, lineSplitter: /\r?\n/, parseValue: <a function to parse each value> }
+         * @param options optional: { valueSplitter: /\t/, lineSplitter: /\r?\n/, parseValue: <a function to parse each value>, stripHeader: <boolean> }
          * @returns an array of arrays, e.g. [["11", "12", "13"], ["21", "22", "23"]]
          */
         toArrays: function toArrays(tsv, options) {
             var opts = tsvOptions(options);
             var lines = tsv.split(opts.lineSplitter);
             var rownum = opts.startRownum || 0;
-            return lines.map(function doLine(line) {
+            var array = lines.map(function doLine(line) {
                 return $.tsv.toArray(line, opts, rownum++);
             });
+            if (opts.stripHeader) {
+                array[-1] = array.shift();
+            }
+            return array;
         },
 
         /**
