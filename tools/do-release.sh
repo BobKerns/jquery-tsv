@@ -3,6 +3,7 @@ GOOGLEHOST=code.google.com
 
 ROOT=$(dirname $0)/..
 cd $ROOT
+ROOT=$(pwd)
 
 RELEASE=$1
 
