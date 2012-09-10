@@ -6,4 +6,4 @@
 	url = https://github.com/pivotal/jasmine.git
 [submodule "wiki"]
 	path = wiki
-	url = https://rwk%40acm.org@code.google.com/p/jquery-tsv.wiki/
+	url = https://code.google.com/p/jquery-tsv.wiki/
