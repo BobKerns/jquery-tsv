@@ -108,40 +108,49 @@
              */
             extend: $.extend,
             /**
-             * The parser kernel. It is called with the arguments that String.replace supplies on each match.
-             * The matches it is called on is determined by the lexer -- a regex that identifies the sequence
-             * of pieces that the parser kernel should operate on.
+             * A syntax consists of, at a minimum, a lexer and a parser kernel, for the parsing,
+             * and a valueSeparator and rowSeparator for the standard formatting kernel.
              *
-             * The context of the kernel will be the parser state object, which provides various parts of the
-             * parsing process:
-             *
-             * state: This is initially 0 to denote the initial state; the kernel should use this to identify
-             *        the current state of scanning the line. The additional states and their interpretation
-             *        are up to the kernel.
-             *
-             * The kernel must call this.endOfValue([value]) on each complete value.
-             * If no value is supplied, the value of this.value is used.
-             *
-             * The kernel must call this.endOfRow([row]) on each complete row
-             * If no value is supplied, the value of this.row is used. This is maintained automatically by
-             * this.endOfValue()
-             *
-             * The kernel should call this.endOfTable([result]) if it detects the end of the table. If this
-             * is not called (as will often be the case when end-of-table is marked by simply no more input
-             * string) it will be called automatically as this.endOfTable(), taking the result from this.result.
-             *
-             * The kernel is free to maintain any stack or history it needs to perform backtracking and other
-             * more advanced parser behavior. If the parser can only perform its work when the complete input has been
-             * seen, it may set this.finalize to a function to be called when this.endOfTable() is called. It will
-             * be called with the result-as-supplied, and should return the result-to-be-used.
+             * More complex formats may require additional features. For example, CSV will require its own
+             * formatting kernel, to handle quotation.
              */
-            kernel: tsvKernel,
-            /**
-             * A regular expression that matches each syntactically-relevant piece of the input.
-             * The parser is then responsible for examining the sequence of these pieces to construct
-             * the final result.
-             */
-            lexer: /[\t\r\n]|[^\t\r\n]+/g
+            syntax: {
+                /**
+                 * The parser kernel. It is called with the arguments that String.replace supplies on each match.
+                 * The matches it is called on is determined by the lexer -- a regex that identifies the sequence
+                 * of pieces that the parser kernel should operate on.
+                 *
+                 * The context of the kernel will be the parser state object, which provides various parts of the
+                 * parsing process:
+                 *
+                 * state: This is initially 0 to denote the initial state; the kernel should use this to identify
+                 *        the current state of scanning the line. The additional states and their interpretation
+                 *        are up to the kernel.
+                 *
+                 * The kernel must call this.endOfValue([value]) on each complete value.
+                 * If no value is supplied, the value of this.value is used.
+                 *
+                 * The kernel must call this.endOfRow([row]) on each complete row
+                 * If no value is supplied, the value of this.row is used. This is maintained automatically by
+                 * this.endOfValue()
+                 *
+                 * The kernel should call this.endOfTable([result]) if it detects the end of the table. If this
+                 * is not called (as will often be the case when end-of-table is marked by simply no more input
+                 * string) it will be called automatically as this.endOfTable(), taking the result from this.result.
+                 *
+                 * The kernel is free to maintain any stack or history it needs to perform backtracking and other
+                 * more advanced parser behavior. If the parser can only perform its work when the complete input has been
+                 * seen, it may set this.finalize to a function to be called when this.endOfTable() is called. It will
+                 * be called with the result-as-supplied, and should return the result-to-be-used.
+                 */
+                parserKernel: tsvKernel,
+                /**
+                 * A regular expression that matches each syntactically-relevant piece of the input.
+                 * The parser is then responsible for examining the sequence of these pieces to construct
+                 * the final result.
+                 */
+                lexer: /[\t\r\n]|[^\t\r\n]+/g
+            }
         },
 
         /**
@@ -468,13 +477,13 @@
                 endOfTable: endOfTable,
                 endOfHeader: endOfHeader
         };
-        if (opts.kernel.initialize) {
-            opts.initialize.kernel.call(state, state); // Initialize
+        if (opts.syntax.initializeParser) {
+            opts.syntax.initializeParser.call(state, state); // Initialize
         }
-        opts.lexer.lastIndex = 0; // Start at the beginning
-        str.replace(opts.lexer, function transition(m0, m1) {
+        opts.syntax.lexer.lastIndex = 0; // Start at the beginning
+        str.replace(opts.syntax.lexer, function transition(m0, m1) {
             if (! state.done) {
-                opts.kernel.apply(state, arguments);
+                opts.syntax.parserKernel.apply(state, arguments);
             }
             if (state.error) {
                 throw new Error((typeof error === "string") ? state.error : "parsing error");
@@ -483,7 +492,7 @@
         });
         if (! state.done) {
             // Special case, that kernels must handle. If no arguments are suplied, it indicates the end of input.
-            opts.kernel.apply(state, []);
+            opts.syntax.parserKernel.apply(state, []);
         }
         return state.endOfTable();
     }
