@@ -52,16 +52,8 @@
              * @returns the value, parsed
              */
             parseValue: null,
-            /**
-             *  The character sequence to use to separate lines.
-             */
-            lineSeparator: "\n",
-            /** A RegExp to recognize line separators */
-            lineSplitter: /\r?\n/,
-            /** The character sequence to use to separate values. */
             valueSeparator: "\t",
-            /** A RegExp to recognize value separators. */
-            valueSplitter: /\t/,
+            rowSeparator: "\n",
             /**
              * If supplied, a function of one argument to convert a row to an object.
              *
@@ -149,7 +141,7 @@
              * The parser is then responsible for examining the sequence of these pieces to construct
              * the final result.
              */
-            lexer: /[\t\r\n]|[^\t\r\n]+/
+            lexer: /[\t\r\n]|[^\t\r\n]+/g
         },
 
         /**
@@ -161,14 +153,13 @@
          */
         toArray: function toArray(line, options, rownum) {
             var opts = tsvOptions(options);
-            var valueSplitter = opts.valueSplitter;
-            rownum = rownum || 0;
-            var colnum = 0;
-            function doValue(val) {
-                var c = colnum++;
-                return parseValue(val, opts, c, tsvColumn(opts, c), rownum);
+            var result = parser(line, true, opts, rownum);
+            switch (result.length) {
+            case 0: return [];
+            case 1: return result[0];
+            default:
+                throw new Error("Parser returned too many values.");
             }
-            return line.split(valueSplitter).map(doValue);
         },
 
         /**
@@ -202,11 +193,7 @@
          */
         toArrays: function toArrays(tsv, options) {
             var opts = tsvOptions(options);
-            var lines = tsv.split(opts.lineSplitter);
-            var rownum = opts.startRownum || 0;
-            var array = lines.map(function doLine(line) {
-                return $.tsv.toArray(line, opts, rownum++);
-            });
+            var array = parser(tsv, false, opts);
             if (opts.stripHeader) {
                 array[-1] = array.shift();
             }
@@ -232,7 +219,7 @@
             if (header) {
                 rtemp.unshift(header);
             }
-            return rtemp.join(opts.lineSeparator);
+            return rtemp.join(opts.rowSeparator);
         },
 
         /**
@@ -432,24 +419,23 @@
         }
     }
 
-    function parser(str, single, options) {
+    function parser(str, single, options, startRow) {
         var opts = tsvOptions(options);
         var colIdx = 0;
-        var rowIdx = 0;
+        var rowIdx = startRow || 0;
         function endOfValue(value) {
             value = (value !== undefined) ? value : this.value;
-            value = parseValue(value, options);
-            value = this.opts.parseValue(value, opts, colIdx, tsvColumn(opts, colIdx), rowIdx);
+            value = parseValue(value, opts, colIdx, tsvColumn(opts, colIdx), rowIdx);
             this.row.push(value);
             this.value = "";
             colIdx++;
         }
         function endOfRow(row) {
             row = (row !== undefined) ? row : this.row;
-            this.result.push(row);
+            this.array.push(row);
             this.row = [];
             if (this.single) {
-                result = this.endOfTable();
+                this.array = this.endOfTable();
             }
             rowIdx++;
             colIdx = 0;
@@ -458,11 +444,11 @@
             this.headers = (headers || this.headers);
         }
         function endOfTable(result) {
-            result = (result !== undefined) ? result : this.result;
+            result = (result !== undefined) ? result : this.array;
             if (! this.done) {
                 this.done = true;
-                if (this.finalize) {
-                    return this.finalize(result);
+                if (opts.finalize) {
+                    return opts.finalize.call(this, result);
                 }
             }
             return result;
@@ -482,9 +468,11 @@
                 endOfTable: endOfTable,
                 endOfHeader: endOfHeader
         };
-        opts.initialize.call(state, state); // Initialize
-        lexer.lastIndex = 0; // Start at the beginning
-        str.replace(options.lexer, function transition(m0, m1) {
+        if (opts.kernel.initialize) {
+            opts.initialize.kernel.call(state, state); // Initialize
+        }
+        opts.lexer.lastIndex = 0; // Start at the beginning
+        str.replace(opts.lexer, function transition(m0, m1) {
             if (! state.done) {
                 opts.kernel.apply(state, arguments);
             }
@@ -493,16 +481,30 @@
             }
             return "";
         });
+        if (! state.done) {
+            // Special case, that kernels must handle. If no arguments are suplied, it indicates the end of input.
+            opts.kernel.apply(state, []);
+        }
         return state.endOfTable();
     }
 
     function tsvKernel(m) {
-        if (m === "\n") {
+        if ((m === "\n") || (m === undefined)) {
+            if (! this.valueSeen) {
+                this.endOfValue("");
+            }
             this.endOfRow();
+            this.valueSeen = false;
         } else if (m === "\r") {
             // Do nothing at all; we let the newline do the work.
         } else if (m !== "\t") {
             this.endOfValue(m);
+            this.valueSeen = true;
+        } else {
+            if (! this.valueSeen) {
+                this.endOfValue("");
+            }
+            this.valueSeen = false;
         }
     }
 
