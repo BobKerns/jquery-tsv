@@ -41,7 +41,7 @@
     }
 
     $.tsv = {
-	version: "0.956-git",
+	version: "0.956",
             /**
              * The default set of options. It is not recommended to change these, as the impact will be global
              */
