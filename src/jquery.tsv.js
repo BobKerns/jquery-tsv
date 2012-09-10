@@ -22,36 +22,6 @@
              */
         options: {
             /**
-             * The parser kernel. It is called with the arguments that String.replace supplies on each match.
-             * The matches it is called on is determined by the lexer -- a regex that identifies the sequence
-             * of pieces that the parser kernel should operate on.
-             *
-             * The context of the kernel will be the parser state object, which provides various parts of the
-             * parsing process:
-             *
-             * state: This is initially 0 to denote the initial state; the kernel should use this to identify
-             *        the current state of scanning the line. The additional states and their interpretation
-             *        are up to the kernel.
-             *
-             * The kernel must call this.endOfValue([value]) on each complete value.
-             * If no value is supplied, the value of this.value is used.
-             *
-             * The kernel must call this.endOfRow([row]) on each complete row
-             * If no value is supplied, the value of this.row is used. This is maintained automatically by
-             * this.endOfValue()
-             *
-             * The kernel should call this.endOfTable([result]) if it detects the end of the table. If this
-             * is not called (as will often be the case when end-of-table is marked by simply no more input
-             * string) it will be called automatically as this.endOfTable(), taking the result from this.result.
-             *
-             * The kernel is free to maintain any stack or history it needs to perform backtracking and other
-             * more advanced parser behavior. If the parser can only perform its work when the complete input has been
-             * seen, it may set this.finalize to a function to be called when this.endOfTable() is called. It will
-             * be called with the result-as-supplied, and should return the result-to-be-used.
-             */
-            kernel: tsvKernel,
-            lexer: /[\t\r\n]|[^\t\r\n]+/,
-            /**
              * If supplied, a function to format a value on output.
              * The returned value is used in the output instead of the supplied value.
              * If not supplied, it is simply converted to a string.
@@ -125,7 +95,49 @@
             // An internal flag, to avoid multiple defaulting steps.
             // values are true, if it is this default, or 'copy'.
             ___defaults_applied: true,
-            extend: $.extend
+            /**
+             * The jQuery.extend operation, applied to $.tsv.options.
+             *
+             * You generally do not need to call this, as you can simply supply the options you wish to override
+             * to the individual calls. If you are extending $.tsv, you can do so recursively to override specific
+             * options.
+             */
+            extend: $.extend,
+            /**
+             * The parser kernel. It is called with the arguments that String.replace supplies on each match.
+             * The matches it is called on is determined by the lexer -- a regex that identifies the sequence
+             * of pieces that the parser kernel should operate on.
+             *
+             * The context of the kernel will be the parser state object, which provides various parts of the
+             * parsing process:
+             *
+             * state: This is initially 0 to denote the initial state; the kernel should use this to identify
+             *        the current state of scanning the line. The additional states and their interpretation
+             *        are up to the kernel.
+             *
+             * The kernel must call this.endOfValue([value]) on each complete value.
+             * If no value is supplied, the value of this.value is used.
+             *
+             * The kernel must call this.endOfRow([row]) on each complete row
+             * If no value is supplied, the value of this.row is used. This is maintained automatically by
+             * this.endOfValue()
+             *
+             * The kernel should call this.endOfTable([result]) if it detects the end of the table. If this
+             * is not called (as will often be the case when end-of-table is marked by simply no more input
+             * string) it will be called automatically as this.endOfTable(), taking the result from this.result.
+             *
+             * The kernel is free to maintain any stack or history it needs to perform backtracking and other
+             * more advanced parser behavior. If the parser can only perform its work when the complete input has been
+             * seen, it may set this.finalize to a function to be called when this.endOfTable() is called. It will
+             * be called with the result-as-supplied, and should return the result-to-be-used.
+             */
+            kernel: tsvKernel,
+            /**
+             * A regular expression that matches each syntactically-relevant piece of the input.
+             * The parser is then responsible for examining the sequence of these pieces to construct
+             * the final result.
+             */
+            lexer: /[\t\r\n]|[^\t\r\n]+/
         },
 
         /**
@@ -317,6 +329,9 @@
             return $.tsv.fromArrays($.tsv.objectsToArrays(array, opts), opts);
         },
 
+        /**
+         * The jQuery.extend operation, applied to $.tsv.
+         */
         extend: $.extend,
         // Access to private functions for unit testing.
         test: {
