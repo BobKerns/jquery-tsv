@@ -52,8 +52,6 @@
              * @returns the value, parsed
              */
             parseValue: null,
-            valueSeparator: "\t",
-            rowSeparator: "\n",
             /**
              * If supplied, a function of one argument to convert a row to an object.
              *
@@ -115,6 +113,7 @@
              * formatting kernel, to handle quotation.
              */
             syntax: {
+                // PARSER SIDE --- see below for formatter-side definitions.
                 /**
                  * The parser kernel. It is called with the arguments that String.replace supplies on each match.
                  * The matches it is called on is determined by the lexer -- a regex that identifies the sequence
@@ -143,13 +142,19 @@
                  * seen, it may set this.finalize to a function to be called when this.endOfTable() is called. It will
                  * be called with the result-as-supplied, and should return the result-to-be-used.
                  */
-                parserKernel: tsvKernel,
+                parserKernel: tsvParserKernel,
                 /**
                  * A regular expression that matches each syntactically-relevant piece of the input.
                  * The parser is then responsible for examining the sequence of these pieces to construct
                  * the final result.
                  */
-                lexer: /[\t\r\n]|[^\t\r\n]+/g
+                lexer: /[\t\r\n]|[^\t\r\n]+/g,
+
+                // FORMATTER SIDE -- See above for parser-side definitions
+
+                valueSeparator: "\t",
+                rowSeparator: "\n",
+                formatterKernel: simpleFormatterKernel
             }
         },
 
@@ -180,7 +185,7 @@
         */
         fromArray: function fromArray(array, options, rownum) {
             var opts = tsvOptions(options);
-            var valueSeparator = opts.valueSeparator;
+            var valueSeparator = opts.valueSeparator || opts.syntax.valueSeparator;
             var colnum = 0;
             function doValue(val) {
                 var c = colnum++;
@@ -228,7 +233,7 @@
             if (header) {
                 rtemp.unshift(header);
             }
-            return rtemp.join(opts.rowSeparator);
+            return rtemp.join(opts.rowSeparator || opts.syntax.rowSeparator);
         },
 
         /**
@@ -497,7 +502,7 @@
         return state.endOfTable();
     }
 
-    function tsvKernel(m) {
+    function tsvParserKernel(m) {
         if ((m === "\n") || (m === undefined)) {
             if (! this.valueSeen) {
                 this.endOfValue("");
@@ -515,6 +520,44 @@
             }
             this.valueSeen = false;
         }
+    }
+
+    /**
+     * @param event the formatting event
+     * @param param the parameter, for "value" events only.
+     * @returns undefined, except for an "end" event, which returns the final string.
+     */
+    function simpleFormatterKernel(event, param) {
+        switch (event) {
+        case "begin":
+            this.valueSeen = false;
+            this.rowSeen = false;
+            this.result = [];
+            break;
+        case "beginRow":
+            if (this.rowSeen) {
+                this.output.push(this.rowSeparator);
+            }
+            this.valueSeen = false;
+            break;
+        case "value":
+            if (this.valueSeen) {
+                this.output.push(this.valueSeparator);
+            }
+            this.output.push(param);
+            this.valueSeen = true;
+            break;
+        case "endRow":
+            this.rowSeen = true;
+            break;
+        case "end":
+            var result = this.result.join("");
+            delete this.result;
+            return result;
+        default:
+            throw new Error("Unknown formatter event: " + event);
+        }
+
     }
 
     // Compatibility with initial release.
