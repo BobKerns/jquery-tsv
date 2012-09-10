@@ -2,7 +2,7 @@
 	"name": "tsv",
 	"title": "jQuery Tab Separated Values (TSV)",
 	"description": "Parser and formatter for tab-separated values, one of the most common formats for data interchange -- text/tab-separated-values",
-	"version": "0.956",
+	"version": "0.957",
 	"homepage": "http://code.google.com/jquery-tsv",
 	"author": {
 		"name": "Bob Kerns",
