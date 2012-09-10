@@ -10,110 +10,6 @@
  */
 
 (function ($) {
-    // Make sure we have a copy, not original, of $.tsv.options.
-    function copyOptions(options) {
-        return $.extend({__copy: true}, options);
-    }
-    // Default the options.
-    function tsvOptions(options) {
-        if (options) {
-            if (options.__defaults_applied) {
-                return options;
-            }
-            return $.extend(copyOptions($.tsv.options), options);
-        }
-        return copyOptions($.tsv.options);
-    }
-
-    function tsvColumn(options, index) {
-        var opts = tsvOptions(options);
-        return String(opts.columns ? opts.columns[index] : index);
-    }
-
-    function tsvColumns(options, top) {
-        if (options.columns) {
-            return options.columns;
-        } else {
-            var cols = Object.keys(top || {}).sort();
-            options.columns = cols;
-            return cols;
-        }
-    }
-
-    function parser(str, single, options) {
-        var opts = tsvOptions(options);
-        var colIdx = 0;
-        var rowIdx = 0;
-        function endOfValue(value) {
-            value = (value !== undefined) ? value : this.value;
-            value = parseValue(value, options);
-            value = this.opts.parseValue(value, opts, colIdx, tsvColumn(opts, colIdx), rowIdx);
-            this.row.push(value);
-            this.value = "";
-            colIdx++;
-        }
-        function endOfRow(row) {
-            row = (row !== undefined) ? row : this.row;
-            this.result.push(row);
-            this.row = [];
-            if (this.single) {
-                result = this.endOfTable();
-            }
-            rowIdx++;
-            colIdx = 0;
-        }
-        function endOfHeader(headers) {
-            this.headers = (headers || this.headers);
-        }
-        function endOfTable(result) {
-            result = (result !== undefined) ? result : this.result;
-            if (! this.done) {
-                this.done = true;
-                if (this.finalize) {
-                    return this.finalize(result);
-                }
-            }
-            return result;
-        }
-        var state = {
-                options: opts,
-                single: single,
-                state: -1, // -1 = initialize, 0 = end of value, 1 = end of row, 2 = end of table, others defined by parserKernel
-                value: "",
-                row: [],
-                array: [],
-                headers: [],
-                done: false,
-                error: false,
-                endOfValue: endOfValue,
-                endOfRow: endOfRow,
-                endOfTable: endOfTable,
-                endOfHeader: endOfHeader
-        };
-        opts.initialize.call(state, state); // Initialize
-        lexer.lastIndex = 0; // Start at the beginning
-        str.replace(options.lexer, function transition(m0, m1) {
-            if (! state.done) {
-                opts.kernel.apply(state, arguments);
-            }
-            if (state.error) {
-                throw new Error((typeof error === "string") ? state.error : "parsing error");
-            }
-            return "";
-        });
-        return state.endOfTable();
-    }
-
-    function tsvKernel(m) {
-        if (m === "\n") {
-            this.endOfRow();
-        } else if (m === "\r") {
-            // Do nothing at all; we let the newline do the work.
-        } else if (m !== "\t") {
-            this.endOfValue(m);
-        }
-    }
-
     $.tsv = {
             /**
              * This version of the jQuery.tsv plugin.
@@ -469,6 +365,111 @@
         }
         return String(value);
     }
+
+    // Make sure we have a copy, not original, of $.tsv.options.
+    function copyOptions(options) {
+        return $.extend({__copy: true}, options);
+    }
+    // Default the options.
+    function tsvOptions(options) {
+        if (options) {
+            if (options.__defaults_applied) {
+                return options;
+            }
+            return $.extend(copyOptions($.tsv.options), options);
+        }
+        return copyOptions($.tsv.options);
+    }
+
+    function tsvColumn(options, index) {
+        var opts = tsvOptions(options);
+        return String(opts.columns ? opts.columns[index] : index);
+    }
+
+    function tsvColumns(options, top) {
+        if (options.columns) {
+            return options.columns;
+        } else {
+            var cols = Object.keys(top || {}).sort();
+            options.columns = cols;
+            return cols;
+        }
+    }
+
+    function parser(str, single, options) {
+        var opts = tsvOptions(options);
+        var colIdx = 0;
+        var rowIdx = 0;
+        function endOfValue(value) {
+            value = (value !== undefined) ? value : this.value;
+            value = parseValue(value, options);
+            value = this.opts.parseValue(value, opts, colIdx, tsvColumn(opts, colIdx), rowIdx);
+            this.row.push(value);
+            this.value = "";
+            colIdx++;
+        }
+        function endOfRow(row) {
+            row = (row !== undefined) ? row : this.row;
+            this.result.push(row);
+            this.row = [];
+            if (this.single) {
+                result = this.endOfTable();
+            }
+            rowIdx++;
+            colIdx = 0;
+        }
+        function endOfHeader(headers) {
+            this.headers = (headers || this.headers);
+        }
+        function endOfTable(result) {
+            result = (result !== undefined) ? result : this.result;
+            if (! this.done) {
+                this.done = true;
+                if (this.finalize) {
+                    return this.finalize(result);
+                }
+            }
+            return result;
+        }
+        var state = {
+                options: opts,
+                single: single,
+                state: -1, // -1 = initialize, 0 = end of value, 1 = end of row, 2 = end of table, others defined by parserKernel
+                value: "",
+                row: [],
+                array: [],
+                headers: [],
+                done: false,
+                error: false,
+                endOfValue: endOfValue,
+                endOfRow: endOfRow,
+                endOfTable: endOfTable,
+                endOfHeader: endOfHeader
+        };
+        opts.initialize.call(state, state); // Initialize
+        lexer.lastIndex = 0; // Start at the beginning
+        str.replace(options.lexer, function transition(m0, m1) {
+            if (! state.done) {
+                opts.kernel.apply(state, arguments);
+            }
+            if (state.error) {
+                throw new Error((typeof error === "string") ? state.error : "parsing error");
+            }
+            return "";
+        });
+        return state.endOfTable();
+    }
+
+    function tsvKernel(m) {
+        if (m === "\n") {
+            this.endOfRow();
+        } else if (m === "\r") {
+            // Do nothing at all; we let the newline do the work.
+        } else if (m !== "\t") {
+            this.endOfValue(m);
+        }
+    }
+
     // Compatibility with initial release.
     $.tsv.parseRow = $.tsv.toArray;
     $.tsv.parseRows = $.tsv.toArrays;
