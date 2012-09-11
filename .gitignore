@@ -1,8 +1,9 @@
 *~
-#*
+*#
 *.tmp
 *.bak
 *.BAK
 *.log
 *.new
 temp/
+out/
