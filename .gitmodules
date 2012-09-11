@@ -7,3 +7,6 @@
 [submodule "wiki"]
 	path = wiki
 	url = https://code.google.com/p/jquery-tsv.wiki/
+[submodule "tools/jsdoc"]
+	path = tools/jsdoc
+	url = https://github.com/jsdoc3/jsdoc.git
