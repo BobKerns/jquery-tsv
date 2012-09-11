@@ -4,9 +4,9 @@ GOOGLEHOST=code.google.com
 ROOT=$(dirname $0)/..
 cd $ROOT
 ROOT=$(pwd)
+WROOT=$(pwd -W || pwd)
 
 RELEASE=$1
-
 
 
 # Make sure we have a version number.
@@ -121,14 +121,14 @@ mv tsv.jquery.json.new tsv.jquery.json
 
 # Then update the version number in the source.
 
-sed "s/^\(\s*version\s*:\s*\)\".*\"\(\s*,\s*$\)/\1\"${RELEASE}-git\"\2/" < src/jquery.tsv.js >src/jquery.tsv.js.new
+sed "s/^\(\s*version\s*:\s*\|\s*@version\s+\)\".*\"\(\s*,\s*$\)/\1\"${RELEASE}-git\"\2/" < src/jquery.tsv.js >src/jquery.tsv.js.new
 mv src/jquery.tsv.js.new src/jquery.tsv.js
 
 # Copy the source release to the releases tree
 
 mkdir -p releases/$RELEASE
 
-sed "s/^\(\s*version\s*:\s*\)\".*\"\(\s*,\s*$\)/\1\"${RELEASE}\"\2/" < src/jquery.tsv.js >releases/$RELEASE/jquery.tsv-$RELEASE.js
+sed "s/^\(\s*version\s*:\s*\|\s*@version\s+\)\".*\"\(\s*,\s*$\)/\1\"${RELEASE}\"\2/" < src/jquery.tsv.js >releases/$RELEASE/jquery.tsv-$RELEASE.js
 
 # Then minify the release.
 
