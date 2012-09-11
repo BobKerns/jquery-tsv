@@ -134,7 +134,18 @@ sed "s/^\(\s*version\s*:\s*\|\s*@version\s+\)\".*\"\(\s*,\s*$\)/\1\"${RELEASE}\"
 
 tools/jsmin <releases/$RELEASE/jquery.tsv-$RELEASE.js >releases/$RELEASE/jquery.tsv-$RELEASE.min.js
 
-git add releases/$RELEASE tsv.jquery.json src/jquery.tsv.js
+# Now regenerate the jsdoc
+# We check it in both into a fixed location in the repository, and into the release area,
+# to make it available at a fixed URL or version-specific.
+
+rm -rf doc
+tools/jsdoc-fixed <releases/$RELEASE/jquery.tsv-release.js -d doc
+cp -R doc releases/$RELEASE/doc
+
+# Create a .zip file of the release.
+(cd releases; jar cf $RELEASE.zip $RELEASE)
+
+git add releases/$RELEASE releases/$RELEASE.zip doc tsv.jquery.json src/jquery.tsv.js
 
 git commit -m"Release $RELEASE"
 
