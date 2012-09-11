@@ -514,22 +514,27 @@
     }
 
     function tsvParserKernel(m) {
-        if ((m === "\n") || (m === undefined)) {
+        switch (m) {
+        case "\n":
+        case undefined:
             if (! this.valueSeen) {
                 this.endOfValue("");
             }
             this.endOfRow();
             this.valueSeen = false;
-        } else if (m === "\r") {
+            break;
+        case "\r":
             // Do nothing at all; we let the newline do the work.
-        } else if (m !== "\t") {
-            this.endOfValue(m);
-            this.valueSeen = true;
-        } else {
+            break;
+        case "\t":
             if (! this.valueSeen) {
                 this.endOfValue("");
             }
             this.valueSeen = false;
+            break;
+        default:
+            this.endOfValue(m);
+            this.valueSeen = true;
         }
     }
 
