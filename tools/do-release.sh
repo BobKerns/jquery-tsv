@@ -138,7 +138,7 @@ tools/jsmin <releases/$RELEASE/jquery.tsv-$RELEASE.js >releases/$RELEASE/jquery.
 # We check it in both into a fixed location in the repository, and into the release area,
 # to make it available at a fixed URL or version-specific.
 
-rm -rf doc
+rm -rf doc 2>&1 >/dev/null || exit 0
 tools/jsdoc-fixed <releases/$RELEASE/jquery.tsv-$RELEASE.js -d doc
 cp -R doc releases/$RELEASE/doc
 
