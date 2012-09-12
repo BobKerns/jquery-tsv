@@ -38,24 +38,26 @@ If you supply the `{ stripHeader: true `} header option, the first line will
 be removed as a header line. It can be retrieved using an index of [-1].
 
 = Functions =
+For details, see the [https://raw.github.com/BobKerns/jquery-tsv/master/doc/index.html API documentation].
+
 Static Functions:
-  * $.tsv.[toArrays] -- parse an entire TSV string as arrays of values
-  * $.tsv.[toArray] -- parse one line of TSV = as a single array of values
+  * $.tsv.toArrays -- parse an entire TSV string as arrays of values
+  * $.tsv.toArray -- parse one line of TSV = as a single array of values
 
-  * $.tsv.[toObjects] -- parse an entire TSV string as objects
-  * $.tsv.[toObject] -- parse one line of TSV as one object
+  * $.tsv.toObjects -- parse an entire TSV string as objects
+  * $.tsv.toObject -- parse one line of TSV as one object
 
-  * $.tsv.[arraysToObjects] -- convert an entire array of row arrays to objects.
-  * $.tsv.[objectsToArrays] -- convert an entire array of objects to an array of row arrays.
-  * $.tsv.[arrayToObject] -- convert one row array to an object.
-  * $.tsv.[objectToArray] -- convert one object to a row array.
+  * $.tsv.arraysToObjects -- convert an entire array of row arrays to objects.
+  * $.tsv.objectsToArrays -- convert an entire array of objects to an array of row arrays.
+  * $.tsv.arrayToObject -- convert one row array to an object.
+  * $.tsv.objectToArray -- convert one object to a row array.
 
-  * $.tsv.[fromArrays] -- format an entire array of row arrays to tsv.
-  * $.tsv.[fromArray] -- format a single row array to tsv.
-  * $.tsv.[fromObjects] -- format an entire array of objects to tsv
-  * $.tsv.[fromObject] -- format one object to one line of tsv
+  * $.tsv.fromArrays -- format an entire array of row arrays to tsv.
+  * $.tsv.fromArray -- format a single row array to tsv.
+  * $.tsv.fromObjects -- format an entire array of objects to tsv
+  * $.tsv.fromObject -- format one object to one line of tsv
 
-  * $.tsv.[options] -- default values for the various options.
+  * $.tsv.options -- default values for the various options.
 
 = Details =
 
