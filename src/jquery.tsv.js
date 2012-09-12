@@ -445,10 +445,6 @@
     };
 
     /**
-     *
-     */
-
-    /**
      * These are private functions but some illustrate the protocols that user-supplied overrides must follow.
      * @Namespace jQuery.tsv.internal
      */
