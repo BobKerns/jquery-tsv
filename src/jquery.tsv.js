@@ -444,6 +444,9 @@
         }
     };
 
+    /**
+     *
+     */
 
     /**
      * These are private functions but some illustrate the protocols that user-supplied overrides must follow.
@@ -497,11 +500,31 @@
         return String(value);
     }
 
-    // Make sure we have a copy, not original, of $.tsv.options.
+    /**
+     * These functions are not available to users.
+     * @namespace jQuery.tsv.private
+     */
+
+    /**
+     * Make sure we have a copy, not original, of $.tsv.options. It is not copied multiple times, so it is shared between invocations
+     * and can serve as a cache and communication between different parts of the code.
+     * @name copyOptions
+     * @memberOf jQuery.tsv.private
+     * @param {jQuery.tsv.options} options
+     * @returns {jQuery.tsv.options} a private per-use copy of the options.
+     */
     function copyOptions(options) {
         return $.extend({__copy: true}, options);
     }
-    // Default the options.
+
+    /**
+     * Get our options, copying, defaulting, and resolving references as needed. This provides common and consistent option handlign
+     * between routines.
+     * @name tsvOptions
+     * @memberOf jQuery.tsv.private
+     * @param {jQuery.tsv.options} options
+     * @returns {jQuery.tsv.options} a private per-use copy of the options.
+     */
     function tsvOptions(options) {
         if (options) {
             if (options.__defaults_applied) {
@@ -512,11 +535,23 @@
         return copyOptions($.tsv.options);
     }
 
+    /**
+     * Get the name for a column. If the options specify column names, they are used, otherwise they are generated from the index.
+     * @param {jQuery.tsv.options} options
+     * @param {Number} index
+     * @returns {String} the name of the requested column.
+     * @memberOf jQuery.tsv.private
+     */
     function tsvColumn(options, index) {
         var opts = tsvOptions(options);
         return String(opts.columns ? opts.columns[index] : index);
     }
 
+    /**
+     * Get the set of columns either configured into the options, or use the supplied top row's keys or indexes.
+     * This is used when writing a table. If no columns were supplied, we name the columns after the sorted keys
+     * of the first object or array in the table.
+     */
     function tsvColumns(options, top) {
         if (options.columns) {
             return options.columns;
@@ -527,6 +562,15 @@
         }
     }
 
+    /**
+     * This is the routine which actually performs the parse, for all supported syntaxes.
+     * @name parser
+     * @memberOf jQuery.tsv.private
+     * @param {String} str the string to be parsed.
+     * @param {Boolean} single true if only a single line should be parsed. If set, parsing ends after the first row.
+     * @param {jQuery.tsv.options} options the set of options for this parse.
+     * @param {Number} startRow the row number of the first row.
+     */
     function parser(str, single, options, startRow) {
         var opts = tsvOptions(options);
         var colIdx = 0;
@@ -635,8 +679,27 @@
                  * @type {Any[][]}
                  */
                 array: [],
+                /**
+                 * The headers parsed so far.
+                 * @field
+                 * @memberOf jQuery.tsv.internal.parserState
+                 * @type {String[]}
+                 */
                 headers: [],
+                /**
+                 * A flag that is set when processing is complete and no further parser kernel calls should be made.
+                 * @field
+                 * @memberOf jQuery.tsv.internal.parserState
+                 * @type {Boolean}
+                 */
                 done: false,
+                /**
+                 * A flag that is set when parsing has failed, no further parser kernel calls should be made, and an error thrown.
+                 * This should be set to the message to be thrown.
+                 * @field
+                 * @memberOf jQuery.tsv.internal.parserState
+                 * @type {Boolean}
+                 */
                 error: false,
                 endOfValue: endOfValue,
                 endOfRow: endOfRow,
