@@ -13,12 +13,91 @@
 
 (function ($) {
     /**
-     * jQuery definition to anchor JsDoc comments.
-     *
-     * @see http://jquery.com/
-     * @name jQuery
-     * @class jQuery Library
-     */
+     * This documents the {@link jQuery.tsv} plugin to jQuery.
+    * <h2>Processing Tab-Separated Values in jQuery</h2>
+    * </p><p>
+    * The jQuery.tsv plugin was inspired by Evan Plaice's jQuery.csv plugin. After adapting that in my project, I found I really needed a proper Tab Separated Values plugin.
+    * </p><p>
+    * Tab,Separated Values format is much simpler (and more limited) than Comma-Separated Values. In particular, there is no possibility of a tab being contained in a value, no quoting, etc.
+    * </p><p>
+    * It's not a very _good_ format, but it's a very _simple_ format and an extremely _common_ format.
+    * </p><p>
+    * The IANA description of the text/tab-separated-values media type appears here:
+    * </p><p>
+    * http://www.iana.org/assignments/media-types/text/tab-separated-values
+    * </p><p>
+    * This package comes with an extensive test suite, and the core TSV functionality is functionally complete.
+    * </p><p>
+    * <h2> Usage </h2>
+    * Simply load jQuery-tsv after jQuery, and in your code, use it like this:
+    * {{{
+    *   var tsv = $.tsv.toArrays(data);
+    *   var firstRow = tsv[0];
+    * }}}
+    * </p><p>
+    * <h2> Headers </h2>
+    * Unfortunately, while the standard description for the mime type says
+    * it should have a header row, in practice, often it will not. There's
+    * no way for the code to tell, so you will have to know or guess.
+    * </p><p>
+    * If you supply the `{ stripHeader: true `} header option, the first line will
+    * be removed as a header line. It can be retrieved using an index of [-1].
+    * </p><p>
+    * <h2> Functions </h2>
+    * For details, see the <a href="jQuery.tsv.html">packgae API documentation</a>.
+    * </p><p>
+    * Static Functions:
+    * <ul>
+    *   <li> $.tsv.toArrays -- parse an entire TSV string as arrays of values</li>
+    *   <li> $.tsv.toArray -- parse one line of TSV = as a single array of values</li>
+    * </ul><ul>
+    *   <li> $.tsv.toObjects -- parse an entire TSV string as objects</li>
+    *   <li> $.tsv.toObject -- parse one line of TSV as one object</li>
+    * </ul><ul>
+    *   <li> $.tsv.arraysToObjects -- convert an entire array of row arrays to objects.</li>
+    *   <li> $.tsv.objectsToArrays -- convert an entire array of objects to an array of row arrays.</li>
+    *   <li> $.tsv.arrayToObject -- convert one row array to an object.</li>
+    *   <li> $.tsv.objectToArray -- convert one object to a row array.</li>
+    * </ul><ul>
+    *   <li> $.tsv.fromArrays -- format an entire array of row arrays to tsv.</li>
+    *   <li> $.tsv.fromArray -- format a single row array to tsv.</li>
+    *   <li> $.tsv.fromObjects -- format an entire array of objects to tsv</li>
+    *   <li> $.tsv.fromObject -- format one object to one line of tsv</li>
+    * </ul><ul>
+    *   <li> $.tsv.options -- default values for the various options.</li>
+    * </ul><p>
+    *
+    * <h2> Details </h2>
+    * </p><p>
+    * The package provides the following features.
+    * </p>
+    * <ul>
+    *   <li> Conversion from tsv text to Javascript arrays of array values
+    *     <ul>
+    *     <li>An array of line arrays, `e.g. `[["header1","header2"], ["val11", "val12"], ["val21", "val22"]]</li>
+    *     <li>Line-at-a-time, `["val1", "val2"]`</li>
+    *     </ul>
+    *   </li>
+    *   <li> Conversion from tsv text to Javascript arrays of objects
+    *     <ul>
+    *     <li> e.g. `[ {header1: "val11", header2: "val12"}, {header1: "val21", header2: "val22"}]`</li>
+    *     <li> Column/attribute names can be taken from the tsv header row (if present), or supplied</li>
+    *     <li>An array of objects, or an object at a time.</li>
+    *     </ul>
+    *   </li>
+    *   <li> Conversion from either format above to tsv text.
+    *   <li> Parsers/formatters can be specified for the data values (so numbers and dates can be read/written as numbers and dates, for example).
+    * </ul>
+    * <p>
+    * <h2> Compatibility </h2>
+    * </p><p>
+    * Prior versions had alternate names for many of the functions. The older names are deprecated but still available. They will be removed in a future release, after 1.0.
+    * </p>
+    *
+    * @see http://jquery.com/
+    * @name jQuery
+    * @class jQuery Library
+    */
     /**
      * TSV library plugin to jQuery
      * @see http://jquery-tsv.googlecode.com/
