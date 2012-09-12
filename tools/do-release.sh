@@ -139,7 +139,7 @@ tools/jsmin <releases/$RELEASE/jquery.tsv-$RELEASE.js >releases/$RELEASE/jquery.
 # to make it available at a fixed URL or version-specific.
 
 rm -rf doc
-tools/jsdoc-fixed <releases/$RELEASE/jquery.tsv-release.js -d doc
+tools/jsdoc-fixed <releases/$RELEASE/jquery.tsv-$RELEASE.js -d doc
 cp -R doc releases/$RELEASE/doc
 
 # Create a .zip file of the release.
