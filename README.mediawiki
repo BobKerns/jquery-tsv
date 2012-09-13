@@ -38,7 +38,7 @@ If you supply the `{ stripHeader: true `} header option, the first line will
 be removed as a header line. It can be retrieved using an index of [-1].
 
 = Functions =
-For details, see the [https://raw.github.com/BobKerns/jquery-tsv/master/doc/index.html API documentation].
+For details, see the [http://cdn.pekolin.com/jquery-tsv/current/doc/index.html API documentation].
 
 Static Functions:
   * $.tsv.toArrays -- parse an entire TSV string as arrays of values
