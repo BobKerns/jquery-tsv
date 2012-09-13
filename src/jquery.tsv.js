@@ -278,7 +278,10 @@
         },
 
         /**
-         * $.tsv.toArray(line, options) parses one line of TSV input into an array of values.
+         * <p>$.tsv.toArray(line, options) parses one line of TSV input into an array of values.
+         * </p><p>
+         * There must be exactly one line of data, not counting any header (which must be stripped).
+         * </p>
          * @param {String} line A line with values separated by single tab characters, e.g. "11\t12\t13"
          * @param {jQuery.tsv.options} options optional: { valueSplitter: /\t/, parseValue: <a function to parse each value>}
          * @param {Number} rownum optional: the row number (defaults to 0);
@@ -313,12 +316,14 @@
         },
 
         /**
-         * $.tsv.toArrays(tsv, options) returns an array of arrays, one per line, each containing values from one row.
-         *
-         * If the stripHeader: option is set to true, the header will be stripped from the array, and re-added as element -1.
+         * <p>$.tsv.toArrays(tsv, options) returns an array of arrays, one per line, each containing values from one row.
+         * </p><p>
+         * If the {@link jQuery.tsv.options.stripHeader}: option is set to true, the header will be stripped from the array,
+         * and re-added as element -1.
+         * </p><p>
          * This does not add to the length of the array, and indexing from 0 to result.length will still access the data, but
          * not the header.
-         *
+         * </p>
          * @param {String} tsv a tab-separated-values input, e.g. "11\t\12\t13\n21\t22\t23"
          * @param {jQuery.tsv.options} options optional: { valueSplitter: /\t/, lineSplitter: /\r?\n/, parseValue: <a function to parse each value>, stripHeader: <boolean> }
          * @returns {String[][]} an array of arrays, e.g. [["11", "12", "13"], ["21", "22", "23"]]
@@ -420,6 +425,24 @@
             return array.map(function convert(row) {
                 return $.tsv.arrayToObject(row, opts, rownum++);
             });
+        },
+
+        /**
+         * <p>$.tsv.toObject(tsv, options) returns a single object from a tsv string.
+         * The string must either have the first row be column names, or columns: ["name1", "name2", ...] must be supplied
+         * in the options.
+         * </p><p>
+         * There must be exactly one line of data, not counting any header.
+         * </p>
+         * @param {String} A TSV string, e.g. "val1\tval2..." or "name1\tname2...\n\val1\val2..."
+         * @param {jQuery.tsv.options} options optional: { columns ["name1", "name2" ...] }
+         * @returns {Object[]} an array of objects, e.g. [ {name1: val1, name2: val2 ...} ...]
+         * @function
+         * @memberOf jQuery.tsv
+         */
+        toObject: function toObject(tsv, options) {
+            var opts = tsvOptions(options);
+            return $.tsv.arrayToObject($.toArray(tsv, opts), opts);
         },
 
         /**
@@ -902,13 +925,49 @@
     }
 
     // Compatibility with initial release.
+    /**
+     * Compatibility with earlier releases.
+     * @namespace jQuery.tsv.compatibility
+     */
+    /**
+     * @memberOf jQuery.tsv.compatibility
+     * @see jQuery.tsv.toArray
+     */
     $.tsv.parseRow = $.tsv.toArray;
+    /**
+     * @memberOf jQuery.tsv.compatibility
+     * @see jQuery.tsv.toArrays
+     */
     $.tsv.parseRows = $.tsv.toArrays;
+    /**
+     * @memberOf jQuery.tsv.compatibility
+     * @see jQuery.tsv.toObject
+     */
     $.tsv.parseObject = $.tsv.toObject;
+    /**
+     * @memberOf jQuery.tsv.compatibility
+     * @see jQuery.tsv.toObjects
+     */
     $.tsv.parseObjects = $.tsv.toObjects;
+    /**
+     * @memberOf jQuery.tsv.compatibility
+     * @see jQuery.tsv.fromArray
+     */
     $.tsv.formatRow = $.tsv.fromArray;
+    /**
+     * @memberOf jQuery.tsv.compatibility
+     * @see jQuery.tsv.fromArrays
+     */
     $.tsv.formatRows = $.tsv.fromArrays;
+    /**
+     * @memberOf jQuery.tsv.compatibility
+     * @see jQuery.tsv.fromObject
+     */
     $.tsv.formatObject = $.tsv.fromObject;
+    /**
+     * @memberOf jQuery.tsv.compatibility
+     * @see jQuery.tsv.fromObjects
+     */
     $.tsv.formatObjects = $.tsv.fromObjects;
 
     if (! $.csv) {
