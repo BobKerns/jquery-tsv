@@ -1,0 +1,4 @@
+*.js      filter=whitespace
+*.java    filter=whitespace
+*.txt     filter=whitespace
+
